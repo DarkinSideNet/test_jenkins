@@ -1,6 +1,11 @@
 pipeline {
-    agent any
-
+    agent {
+        docker {
+            image 'amazon/aws-cli:latest'
+            // Quan trọng: Ghi đè entrypoint để Jenkins có thể chạy lệnh sh bên trong
+            args '--entrypoint=""' 
+        }
+    }
     environment {
         // --- CẤU HÌNH AWS ---
         AWS_REGION = 'us-east-1'
