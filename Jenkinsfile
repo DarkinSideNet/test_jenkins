@@ -15,6 +15,7 @@ pipeline {
 
         // ID Credential lưu trong Jenkins (chứa file PEM)
         JENKINS_SSH_CRED_ID = 'ec2-key-pem' 
+        AWS_CRED_ID = 'aws-credentials-id'
     }
 
     stages {
