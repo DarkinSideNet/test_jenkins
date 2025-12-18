@@ -5,8 +5,7 @@ pipeline {
         // --- CẤU HÌNH AWS ---
         AWS_REGION = 'us-east-1'
         // AMI Ubuntu 22.04 LTS (Deep Learning Base AMI thì bạn thay ID khác)
-        EC2_AMI_ID = 'ami-0c398cb65a93047f2
-' 
+        EC2_AMI_ID = 'ami-0c398cb65a93047f2' 
         EC2_INSTANCE_TYPE = 't3.small'
         
         // Key Pair name ĐÃ TẠO TRÊN AWS CONSOLE
