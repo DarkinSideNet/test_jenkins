@@ -17,6 +17,10 @@ pipeline {
         AWS_CRED_ID = 'aws-credentials-id'
     }
 
+// ádasdasdasdasd
+
+
+
     stages {
         stage('1. Launch EC2 Instance') {
             steps {
