@@ -93,6 +93,7 @@ pipeline {
                             whoami
                             sudo apt update
                             sudo apt install net-tools
+                            ifconfig
                             echo '--- CHECKING GPU ---'
                             
                             
