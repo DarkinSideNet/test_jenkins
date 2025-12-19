@@ -112,10 +112,13 @@ pipeline {
     post {
         always {
             script {
-                echo "🛑 TERMINATING INSTANCE ${env.INSTANCE_ID}..."
                 // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
                 if (env.INSTANCE_ID) {
-                    sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+                    echo "🛑 TERMINATING INSTANCE ${env.INSTANCE_ID}..."
+                    // Phải dùng credentials ở đây để có quyền Admin xóa máy
+                    withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                        sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+                    }
                     echo "✅ Instance terminated."
                 }
             }
