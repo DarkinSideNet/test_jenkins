@@ -52,27 +52,27 @@ pipeline {
         }
 
         // stage('2. Wait for IP & SSH Ready') {
-            steps {
-                script {
-                    echo "⏳ Waiting for Instance to be RUNNING..."
-                    sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+        steps {
+            script {
+                echo "⏳ Waiting for Instance to be RUNNING..."
+                sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
 
-                    // Lấy Public IP
-                    env.INSTANCE_IP = sh(returnStdout: true, script: """
-                        aws ec2 describe-instances \
-                            --instance-ids ${env.INSTANCE_ID} \
-                            --region ${AWS_REGION} \
-                            --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                            --output text
-                    """).trim()
-                    
-                    echo "🌐 Public IP: ${env.INSTANCE_IP}"
-                    
-                    // Chờ thêm 60s để SSH Daemon trên máy Ubuntu kịp khởi động
-                    echo "💤 Sleeping 60s for SSH Daemon to start..."
-                    sleep 60
-                }
+                // Lấy Public IP
+                env.INSTANCE_IP = sh(returnStdout: true, script: """
+                    aws ec2 describe-instances \
+                        --instance-ids ${env.INSTANCE_ID} \
+                        --region ${AWS_REGION} \
+                        --query 'Reservations[0].Instances[0].PublicIpAddress' \
+                        --output text
+                """).trim()
+                
+                echo "🌐 Public IP: ${env.INSTANCE_IP}"
+                
+                // Chờ thêm 60s để SSH Daemon trên máy Ubuntu kịp khởi động
+                echo "💤 Sleeping 60s for SSH Daemon to start..."
+                sleep 60
             }
+        }
         
 
         // stage('3. SSH & Execute Training') {
