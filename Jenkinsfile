@@ -76,49 +76,35 @@ pipeline {
         }
         
 
-        // stage('3. SSH & Execute Training') {
-        //     steps {
-        //         // Load file PEM từ Jenkins Credential vào biến file
-        //         sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
-        //             script {
-        //                 echo "🔌 Connecting via SSH..."
+        stage('3. SSH & Execute Training') {
+            steps {
+                // Load file PEM từ Jenkins Credential vào biến file
+                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+                    script {
+                        echo "🔌 Connecting via SSH..."
                         
-        //                 // Cấu hình SSH: 
-        //                 // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-        //                 // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+                        // Cấu hình SSH: 
+                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
+                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
                         
-        //                 def remoteCommand = """
-        //                     echo '--- HELLO FROM EC2 G4DN ---'
-        //                     hostname
-        //                     whoami
+                        def remoteCommand = """
+                            echo '--- HELLO FROM EC2 G4DN ---'
+                            hostname
+                            whoami
+                            sudo apt update
+                            sudo apt install net-tools
+                            echo '--- CHECKING GPU ---'
                             
-        //                     echo '--- CHECKING GPU ---'
-        //                     # Kiểm tra xem có lệnh nvidia-smi không (nếu dùng AMI thường sẽ chưa có)
-        //                     if command -v nvidia-smi &> /dev/null; then
-        //                         nvidia-smi
-        //                     else
-        //                         echo 'WARNING: Nvidia Driver not found. Please use Deep Learning AMI.'
-        //                     fi
+                            
+                            echo '--- DONE ---'
+                        """
 
-        //                     echo '--- SIMULATING TRAINING ---'
-        //                     mkdir -p workspace
-        //                     cd workspace
-        //                     echo 'Cloning git...'
-        //                     # git clone ... (Điền lệnh git của bạn vào đây)
-                            
-        //                     echo 'Training...'
-        //                     # python3 train.py ...
-        //                     sleep 10 # Giả lập đang train
-                            
-        //                     echo '--- DONE ---'
-        //                 """
-
-        //                 // Thực thi lệnh từ xa
-        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
-        //             }
-        //         }
-        //     }
-        // }
+                        // Thực thi lệnh từ xa
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+                    }
+                }
+            }
+        }
     }
 
     // Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
