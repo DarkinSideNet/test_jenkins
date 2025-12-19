@@ -73,7 +73,7 @@ pipeline {
                     sleep 60
                 }
             }
-        }
+        
 
         // stage('3. SSH & Execute Training') {
         //     steps {
