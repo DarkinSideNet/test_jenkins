@@ -93,7 +93,9 @@ pipeline {
                             whoami
                             sudo apt update
                             sudo apt install net-tools
-                            ifconfig
+                            sudo apt install python3-pip
+                            git clone https://github.com/DarkinSideNet/test_jenkins.git
+                            pip install -r test_jenkins/requirements.txt
                             echo '--- CHECKING GPU ---'
                             
                             
