@@ -76,7 +76,7 @@ pipeline {
         }
         
 
-        stage('3. SSH & Execute Training') {
+        stage('3. SSH - Execute Training [phase 1]') {
             steps {
                 // Load file PEM từ Jenkins Credential vào biến file
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
@@ -96,9 +96,18 @@ pipeline {
                             sudo apt install python3-pip -y
                             git clone https://github.com/DarkinSideNet/test_jenkins.git
                             pip install -r test_jenkins/requirements.txt
-                            echo '--- CHECKING GPU ---'
-                            
-                            
+                            curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
+                            chmod +x mcli
+                            sudo mv mcli /usr/local/bin/mcli
+                            mcli alias set myminio https://minio.neikoscloud.net admin admin123
+                            LATEST_DATA_FILE=$(mcli ls myminio/devopsproject/dataset_raw/ | awk '{print $NF}' | tail -n 1)
+                            LATEST_MODEL_FILE=$(mcli ls myminio/devopsproject/model/ | awk '{print $NF}' | tail -n 1)
+                            echo "Fetching latest data: $LATEST_DATA_FILE"
+                            echo "Fetching latest model: $LATEST_MODEL_FILE"
+                            mcli cp myminio/devopsproject/dataset_raw/${LATEST_DATA_FILE} ./dataset.csv
+                            mcli cp myminio/devopsproject/model/${LATEST_MODEL_FILE} ./model.pth
+                            python3 test_jenkins/multi_train.py
+        
                             echo '--- DONE ---'
                         """
 
