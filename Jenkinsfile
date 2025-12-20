@@ -94,11 +94,11 @@ pipeline {
                             sudo apt update
                             sudo apt install net-tools
                             sudo apt install python3-pip -y
-                            
+                            git clone https://github.com/DarkinSideNet/test_jenkins.git
                             curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
                             chmod +x mcli
                             sudo mv mcli /usr/local/bin/mcli
-                            ./setup_minio.sh
+                            ./test_jenkins/setup_minio.sh
                         
                             
         
