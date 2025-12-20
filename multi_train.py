@@ -5,7 +5,6 @@ import shutil
 import sys
 import datetime
 
-# --- PHẦN THÊM MỚI: LOGGING SYSTEM ---
 class Logger(object):
     def __init__(self, filename):
         self.terminal = sys.stdout
