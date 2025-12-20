@@ -98,6 +98,7 @@ pipeline {
                             curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
                             chmod +x mcli
                             sudo mv mcli /usr/local/bin/mcli
+                            sudo chmod +x ./test_jenkins/setup_minio.sh
                             ./test_jenkins/setup_minio.sh
                         
                             
