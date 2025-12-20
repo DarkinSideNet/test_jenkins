@@ -99,12 +99,13 @@ pipeline {
                             chmod +x mcli
                             sudo mv mcli /usr/local/bin/mcli
                             mcli alias set myminio https://minio.neikoscloud.net admin admin123
-                            LATEST_DATA_FILE=\$(mcli ls myminio/devopsproject/dataset_test/ | grep '\\.csv' | awk '{print \$NF}' | tail -n 1)
-                            LATEST_MODEL_FILE=\$(mcli ls myminio/devopsproject/current_model/ | grep '\\.pth' | awk '{print \$NF}' | tail -n 1)
-                            echo "Fetching latest data: [\$LATEST_DATA_FILE]"
-                            echo "Fetching latest model: [\$LATEST_MODEL_FILE]"
-                            mcli cp myminio/devopsproject/dataset_test/\${LATEST_DATA_FILE} ./dataset.csv
-                            mcli cp myminio/devopsproject/current_model/\${LATEST_MODEL_FILE} ./model.pth
+                            FULL_DATA_PATH=\$(mcli find myminio/devopsproject/dataset_test/ --name "*.csv" | tail -n 1)
+                            FULL_MODEL_PATH=\$(mcli find myminio/devopsproject/current_model/ --name "*.pth" | tail -n 1)
+                            echo "Found Data Path: [\$FULL_DATA_PATH]"
+                            echo "Found Model Path: [\$FULL_MODEL_PATH]"
+                            echo "Downloading files..."
+                            mcli cp "\$FULL_DATA_PATH" ./dataset.csv
+                            mcli cp "\$FULL_MODEL_PATH" ./model.pth
                             
         
                             echo '--- DONE ---'
