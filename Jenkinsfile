@@ -98,14 +98,8 @@ pipeline {
                             curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
                             chmod +x mcli
                             sudo mv mcli /usr/local/bin/mcli
-                            mcli alias set myminio https://minio.neikoscloud.net admin admin123
-                            FULL_DATA_PATH=\$(mcli find myminio/devopsproject/dataset_test/ --name "*.csv" | tail -n 1)
-                            FULL_MODEL_PATH=\$(mcli find myminio/devopsproject/current_model/ --name "*.pth" | tail -n 1)
-                            echo "Found Data Path: [\$FULL_DATA_PATH]"
-                            echo "Found Model Path: [\$FULL_MODEL_PATH]"
-                            echo "Downloading files..."
-                            mcli cp "\$FULL_DATA_PATH" ./dataset.csv
-                            mcli cp "\$FULL_MODEL_PATH" ./model.pth
+                            ./setup_minio.sh
+                        
                             
         
                             echo '--- DONE ---'
