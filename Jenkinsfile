@@ -70,7 +70,7 @@ pipeline {
                     
                     // Chờ thêm 60s để SSH Daemon trên máy Ubuntu kịp khởi động
                     echo " Sleeping 60s for SSH Daemon to start..."
-                    sleep 60
+                    sleep 10
                 }
             }
         }
@@ -111,7 +111,8 @@ pipeline {
                         """
 
                         // Thực thi lệnh từ xa
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+                        // sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.23.34 \"${remoteCommand}\""
                     }
                 }
             }
