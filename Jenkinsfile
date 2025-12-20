@@ -55,18 +55,18 @@ pipeline {
             steps {
                 script {
                     echo "Waiting for Instance to be RUNNING..."
-                    sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-
+                    // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+                    sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
                     // Lấy Public IP
-                    env.INSTANCE_IP = sh(returnStdout: true, script: """
-                        aws ec2 describe-instances \
-                            --instance-ids ${env.INSTANCE_ID} \
-                            --region ${AWS_REGION} \
-                            --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                            --output text
-                    """).trim()
+                    // env.INSTANCE_IP = sh(returnStdout: true, script: """
+                    //     aws ec2 describe-instances \
+                    //         --instance-ids ${env.INSTANCE_ID} \
+                    //         --region ${AWS_REGION} \
+                    //         --query 'Reservations[0].Instances[0].PublicIpAddress' \
+                    //         --output text
+                    // """).trim()
                     
-                    echo "Public IP: ${env.INSTANCE_IP}"
+                    // echo "Public IP: ${env.INSTANCE_IP}"
                     
                     // Chờ thêm 60s để SSH Daemon trên máy Ubuntu kịp khởi động
                     echo " Sleeping 60s for SSH Daemon to start..."
