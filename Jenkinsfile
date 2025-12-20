@@ -54,7 +54,7 @@ pipeline {
         stage('2. Wait for IP & SSH Ready') {
             steps {
                 script {
-                    echo "⏳ Waiting for Instance to be RUNNING..."
+                    echo "Waiting for Instance to be RUNNING..."
                     sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
 
                     // Lấy Public IP
@@ -66,10 +66,10 @@ pipeline {
                             --output text
                     """).trim()
                     
-                    echo "🌐 Public IP: ${env.INSTANCE_IP}"
+                    echo "Public IP: ${env.INSTANCE_IP}"
                     
                     // Chờ thêm 60s để SSH Daemon trên máy Ubuntu kịp khởi động
-                    echo "💤 Sleeping 60s for SSH Daemon to start..."
+                    echo " Sleeping 60s for SSH Daemon to start..."
                     sleep 60
                 }
             }
@@ -94,19 +94,18 @@ pipeline {
                             sudo apt update
                             sudo apt install net-tools
                             sudo apt install python3-pip -y
-                            git clone https://github.com/DarkinSideNet/test_jenkins.git
-                            pip install -r test_jenkins/requirements.txt
+                            
                             curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
                             chmod +x mcli
                             sudo mv mcli /usr/local/bin/mcli
                             mcli alias set myminio https://minio.neikoscloud.net admin admin123
-                            LATEST_DATA_FILE=$(mcli ls myminio/devopsproject/dataset_raw/ | awk '{print $NF}' | tail -n 1)
-                            LATEST_MODEL_FILE=$(mcli ls myminio/devopsproject/model/ | awk '{print $NF}' | tail -n 1)
-                            echo "Fetching latest data: $LATEST_DATA_FILE"
-                            echo "Fetching latest model: $LATEST_MODEL_FILE"
-                            mcli cp myminio/devopsproject/dataset_raw/${LATEST_DATA_FILE} ./dataset.csv
-                            mcli cp myminio/devopsproject/model/${LATEST_MODEL_FILE} ./model.pth
-                            python3 test_jenkins/multi_train.py
+                            LATEST_DATA_FILE=\$(mcli ls myminio/devopsproject/dataset_test/ | awk '{print \$NF}' | tail -n 1)
+                            LATEST_MODEL_FILE=\$(mcli ls myminio/devopsproject/current_model/ | awk '{print \$NF}' | tail -n 1)
+                            echo "Fetching latest data: \$LATEST_DATA_FILE"
+                            echo "Fetching latest model: \$LATEST_MODEL_FILE"
+                            mcli cp myminio/devopsproject/dataset_test/\${LATEST_DATA_FILE} ./dataset.csv
+                            mcli cp myminio/devopsproject/current_model/\${LATEST_MODEL_FILE} ./model.pth
+                            
         
                             echo '--- DONE ---'
                         """
@@ -120,22 +119,22 @@ pipeline {
     }
 
     // Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
-    post {
-        always {
-            script {
-                // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
-                if (env.INSTANCE_ID) {
-                    echo "🛑 TERMINATING INSTANCE ${env.INSTANCE_ID}..."
-                    // Phải dùng credentials ở đây để có quyền Admin xóa máy
-                    withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                        sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-                    }
-                    echo "✅ Instance terminated."
-                }
-            }
-        }
-        failure {
-            echo "❌ Pipeline Failed! Check logs."
-        }
-    }
+    // post {
+    //     always {
+    //         script {
+    //             // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
+    //             if (env.INSTANCE_ID) {
+    //                 echo "🛑 TERMINATING INSTANCE ${env.INSTANCE_ID}..."
+    //                 // Phải dùng credentials ở đây để có quyền Admin xóa máy
+    //                 withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+    //                     sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+    //                 }
+    //                 echo "✅ Instance terminated."
+    //             }
+    //         }
+    //     }
+    //     failure {
+    //         echo "❌ Pipeline Failed! Check logs."
+    //     }
+    // }
 }
