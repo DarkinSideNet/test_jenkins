@@ -2,7 +2,7 @@
 set -e
 
 # Khai báo các đường dẫn MinIO
-MINIO_EVAL_DATA="myminio/devopsproject/Evaluation_Dataset/"
+MINIO_EVAL_DATA="myminio/devopsproject/evaluation_dataset/"
 LOCAL_DATA_DIR="./evaluation_data"
 
 echo "-------------------------------------------------------"

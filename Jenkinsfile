@@ -13,69 +13,63 @@ pipeline {
         EC2_SG_ID = 'sg-0677b9b15b8711d14' 
         PATH = "/var/jenkins_home/bin:$PATH"
         // ID Credential lưu trong Jenkins (chứa file PEM)
-        JENKINS_SSH_CRED_ID = 'ec2-key-pem' 
+        JENKINS_SSH_CRED_ID = 'ssh-eks-key' 
         AWS_CRED_ID = 'aws-credentials-id'
     }
 
-// ádasdasdasdasd
-
-
-
     stages {
-        // stage('1. Launch EC2 Instance') {
-        //     steps {
-        //         // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
-        //         withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-        //             script {
-        //                 echo "Launching EC2 Instance..."
+        stage('1. Launch EC2 Instance') {
+            steps {
+                // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
+                withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                    script {
+                        echo "Launching EC2 Instance..."
                         
-        //                 // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
-        //                 // Lệnh aws cli sẽ tự động nhận diện nó.
-        //                 def output = sh(returnStdout: true, script: """
-        //                     aws ec2 run-instances \
-        //                         --image-id ${EC2_AMI_ID} \
-        //                         --count 1 \
-        //                         --instance-type ${EC2_INSTANCE_TYPE} \
-        //                         --key-name ${EC2_KEY_NAME} \
-        //                         --security-group-ids ${EC2_SG_ID} \
-        //                         --region ${AWS_REGION} \
-        //                         --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
-        //                         --query 'Instances[0].InstanceId' \
-        //                         --output text
-        //                 """).trim()
+                        // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
+                        // Lệnh aws cli sẽ tự động nhận diện nó.
+                        def output = sh(returnStdout: true, script: """
+                            aws ec2 run-instances \
+                                --image-id ${EC2_AMI_ID} \
+                                --count 1 \
+                                --instance-type ${EC2_INSTANCE_TYPE} \
+                                --key-name ${EC2_KEY_NAME} \
+                                --security-group-ids ${EC2_SG_ID} \
+                                --region ${AWS_REGION} \
+                                --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
+                                --query 'Instances[0].InstanceId' \
+                                --output text
+                        """).trim()
                         
-        //                 env.INSTANCE_ID = output
-        //                 echo "Instance Created: ${env.INSTANCE_ID}"
-        //             }
-        //         }
-        //     }
-        // }
+                        env.INSTANCE_ID = output
+                        echo "Instance Created: ${env.INSTANCE_ID}"
+                    }
+                }
+            }
+        }
 
         stage('2. Wait for IP & SSH Ready') {
             steps {
                 script {
                     echo "Waiting for Instance to be RUNNING..."
-                    // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-                    sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
-                    // Lấy Public IP
-                    // env.INSTANCE_IP = sh(returnStdout: true, script: """
-                    //     aws ec2 describe-instances \
-                    //         --instance-ids ${env.INSTANCE_ID} \
-                    //         --region ${AWS_REGION} \
-                    //         --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                    //         --output text
-                    // """).trim()
+                    sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+                    // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
+                    Lấy Public IP
+                    env.INSTANCE_IP = sh(returnStdout: true, script: """
+                        aws ec2 describe-instances \
+                            --instance-ids ${env.INSTANCE_ID} \
+                            --region ${AWS_REGION} \
+                            --query 'Reservations[0].Instances[0].PublicIpAddress' \
+                            --output text
+                    """).trim()
                     
-                    // echo "Public IP: ${env.INSTANCE_IP}"
+                    echo "Public IP: ${env.INSTANCE_IP}"
                     
-                    // Chờ thêm 60s để SSH Daemon trên máy Ubuntu kịp khởi động
+                    
                     echo " Sleeping 60s for SSH Daemon to start..."
                     sleep 10
                 }
             }
         }
-        
-
         stage('3. SSH - Execute Training [phase 1]') {
             steps {
                 // Load file PEM từ Jenkins Credential vào biến file
@@ -88,9 +82,10 @@ pipeline {
                         // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
                         
                         def remoteCommand = """
-                            echo '--- HELLO FROM EC2 G4DN ---'
+                            echo '--- FROM EC2 G4DN ---'
                             hostname
                             whoami
+                            echo '--- SYSTEM SETUP ---'
                             sudo apt update
                             sudo apt install net-tools
                             sudo apt install python3-pip -y
@@ -98,40 +93,92 @@ pipeline {
                             curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
                             chmod +x mcli
                             sudo mv mcli /usr/local/bin/mcli
-                            sudo chmod +x ./test_jenkins/setup_minio.sh
-                            ./test_jenkins/setup_minio.sh
-                        
-                            
-        
+                            pip install -r test_jenkins/requirements.txt
                             echo '--- DONE ---'
                         """
 
                         // Thực thi lệnh từ xa
-                        // sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.23.34 \"${remoteCommand}\""
+                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+
+                    }
+                }
+            }
+        }
+        
+
+        stage('4. SSH - Execute Training [phase 1]') {
+            steps {
+                // Load file PEM từ Jenkins Credential vào biến file
+                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+                    script {
+                        echo "🔌 Connecting via SSH..."
+                        
+                        // Cấu hình SSH: 
+                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
+                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+                        
+                        def remoteCommand = """
+                            echo '--- PHASE 1 TRAINING ---'
+                            sudo chmod +x ./test_jenkins/setup_minio.sh
+                            ./test_jenkins/setup_minio.sh
+                            python3 test_jenkins/multi_train.py
+                            echo '--- DONE ---'
+                        """
+
+                        // Thực thi lệnh từ xa
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+                        
+                    }
+                }
+            }
+        }
+        
+        stage('5. Evaluation & Upload [phase 2]') {
+            steps {
+                // Load file PEM từ Jenkins Credential vào biến file
+                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+                    script {
+                        echo "🔌 Connecting via SSH..."
+                        
+                        // Cấu hình SSH: 
+                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
+                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+                        
+                        def remoteCommand = """
+                            echo '--- STARTING PHASE 2 EVALUATION ---'
+                            sudo chmod +x ./test_jenkins/phase2_eval.sh
+                            ./test_jenkins/phase2_eval.sh
+                            python3 test_jenkins/upload_minio.py
+                            echo '--- DONE ---'
+                        """
+
+                        // Thực thi lệnh từ xa
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+                        
                     }
                 }
             }
         }
     }
 
-    // Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
-    // post {
-    //     always {
-    //         script {
-    //             // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
-    //             if (env.INSTANCE_ID) {
-    //                 echo "🛑 TERMINATING INSTANCE ${env.INSTANCE_ID}..."
-    //                 // Phải dùng credentials ở đây để có quyền Admin xóa máy
-    //                 withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-    //                     sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-    //                 }
-    //                 echo "✅ Instance terminated."
-    //             }
-    //         }
-    //     }
-    //     failure {
-    //         echo "❌ Pipeline Failed! Check logs."
-    //     }
-    // }
+
+    Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
+    post {
+        always {
+            script {
+                // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
+                if (env.INSTANCE_ID) {
+                    echo "TERMINATING INSTANCE ${env.INSTANCE_ID}..."
+                    // Phải dùng credentials ở đây để có quyền Admin xóa máy
+                    withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                        sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+                    }
+                    echo " Instance terminated."
+                }
+            }
+        }
+        failure {
+            echo " Pipeline Failed! Check logs."
+        }
+    }
 }
