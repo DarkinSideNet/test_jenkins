@@ -40,8 +40,13 @@ HORIZONS = [6, 12]
 EPOCHS = [30, 50]
 BATCH_SIZES = [64, 128]
 
-TARGETS = ["temperature", "humidity"]
-DATA_PATH = "dataset_raw/weather_2024-12-01_to_2024-12-31.csv"
+# ===== TARGETS = FEATURES =====
+TARGETS = [
+    "temperature", "feels_like", "humidity", "wind_speed", "gust_speed", "pressure", "precipitation",
+    "rain_probability", "snow_probability", "uv_index", "dewpoint", "visibility", "cloud"
+]
+
+DATA_PATH = "dataset_raw/weather_VungTau_2023.csv"
 MODEL_DIR = "models"
 EXPERIMENT_NAME = "weather_forecast"
 
@@ -60,18 +65,21 @@ def create_sequences(X, y, seq_len):
 def prepare_data(df, features, targets, horizon, seq_len):
     df = df.copy()
 
+    # ===== create future targets =====
     for t in targets:
         df[f"{t}_y"] = df[t].shift(-horizon)
 
     df.dropna(inplace=True)
 
+    # ===== scale input =====
     scaler_X = StandardScaler()
     X = scaler_X.fit_transform(df[features])
 
+    # ===== target (NOT scaled – giữ nguyên đơn vị) =====
     y = df[[f"{t}_y" for t in targets]].values
 
     X_seq, y_seq = create_sequences(X, y, seq_len)
-    return X_seq, y_seq, scaler_X, None
+    return X_seq, y_seq, scaler_X
 
 
 # =====================
@@ -89,8 +97,9 @@ def train_one_model(df, features, cfg):
     mlflow.start_run(run_name=name)
     try:
         mlflow.log_params(cfg)
+
         # ===== Prepare data =====
-        X, y, scaler_X, scaler_y = prepare_data(
+        X, y, scaler_X = prepare_data(
             df, features, TARGETS, cfg["horizon"], cfg["seq_len"]
         )
 
@@ -109,7 +118,7 @@ def train_one_model(df, features, cfg):
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
         loss_fn = nn.MSELoss()
 
-        loss_value = []
+        loss_values = []
 
         # ===== Train =====
         for ep in range(cfg["epochs"]):
@@ -125,7 +134,7 @@ def train_one_model(df, features, cfg):
                 epoch_loss += loss.item()
 
             epoch_loss /= len(loader)
-            loss_value.append(epoch_loss)
+            loss_values.append(epoch_loss)
 
             print(
                 f"[{name}] Epoch {ep+1}/{cfg['epochs']} | "
@@ -159,11 +168,15 @@ def train_one_model(df, features, cfg):
             path,
         )
 
-        avg_last = np.mean(loss_value[-5:]) if len(loss_value) >= 5 else np.mean(loss_value)
+        avg_last = np.mean(loss_values[-5:]) if len(loss_values) >= 5 else np.mean(loss_values)
         mlflow.log_metric("avg_last5_loss", avg_last)
+
         return avg_last
+
     finally:
         mlflow.end_run()
+
+
 # =====================
 # MAIN
 # =====================
@@ -172,12 +185,8 @@ if __name__ == "__main__":
 
     df = pd.read_csv(DATA_PATH)
 
-    FEATURES = [
-        c for c in df.columns
-        if c not in TARGETS
-        and not c.endswith("_y")
-        and df[c].dtype != "object"
-    ]
+    # ===== FEATURES = TARGETS =====
+    FEATURES = TARGETS.copy()
 
     results = []
     log_lines = []
@@ -192,33 +201,37 @@ if __name__ == "__main__":
             "batch_size": batch_size,
         }
 
-        # Train và lấy loss cuối cùng
         loss = train_one_model(df, FEATURES, cfg)
-        model_name = f"h{horizon}_ep{epochs}_bs{batch_size}.pth"
-        results.append({
-            "model_name": model_name,
-            "loss": loss
-        })
-        log_line = f"seq_len: {seq_len}, horizon: {horizon}, epochs: {epochs}, batch_size: {batch_size}, final loss: {loss:.3f}"
-        print(log_line)
-        log_lines.append(log_line)
 
-    top3 = sorted(results, key=lambda x: x["loss"])[:3]
-    log_lines.append("\nTop 3 models with lowest final loss:")
-    print("\nTop 3 models with lowest final loss:")
-    for i, item in enumerate(top3, 1):
-        line = f"{i}. {item['model_name']} | final loss: {item['loss']:.3f}"
+        model_name = f"h{horizon}_ep{epochs}_bs{batch_size}.pth"
+        results.append({"model_name": model_name, "loss": loss})
+
+        line = (
+            f"seq_len={seq_len}, horizon={horizon}, "
+            f"epochs={epochs}, batch_size={batch_size}, "
+            f"final_loss={loss:.4f}"
+        )
         print(line)
         log_lines.append(line)
 
-        
-    os.makedirs("training_logs", exist_ok=True)    
-    with open(os.path.join("training_logs", "train_results.log"), "w", encoding="utf-8") as f:
-        for line in log_lines:
-            f.write(line + "\n")
-    
+    # ===== TOP 3 =====
+    top3 = sorted(results, key=lambda x: x["loss"])[:3]
+
+    print("\n TOP 3 MODELS")
+    log_lines.append("\nTOP 3 MODELS")
+    for i, item in enumerate(top3, 1):
+        line = f"{i}. {item['model_name']} | loss={item['loss']:.4f}"
+        print(line)
+        log_lines.append(line)
+
+    os.makedirs("training_logs", exist_ok=True)
+    with open("training_logs/train_results.log", "w", encoding="utf-8") as f:
+        for l in log_lines:
+            f.write(l + "\n")
+
     os.makedirs("top3_models", exist_ok=True)
     for item in top3:
-        src_path = os.path.join(MODEL_DIR, item["model_name"])
-        dst_path = os.path.join("top3_models", item["model_name"])
-        shutil.copy(src_path, dst_path)
+        shutil.copy(
+            os.path.join(MODEL_DIR, item["model_name"]),
+            os.path.join("top3_models", item["model_name"])
+        )
