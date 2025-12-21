@@ -1,0 +1,13 @@
+seq_len: 24, horizon: 6, epochs: 30, batch_size: 64, final loss: 125.680
+seq_len: 24, horizon: 6, epochs: 30, batch_size: 128, final loss: 478.880
+seq_len: 24, horizon: 6, epochs: 50, batch_size: 64, final loss: 48.240
+seq_len: 24, horizon: 6, epochs: 50, batch_size: 128, final loss: 101.092
+seq_len: 24, horizon: 12, epochs: 30, batch_size: 64, final loss: 103.862
+seq_len: 24, horizon: 12, epochs: 30, batch_size: 128, final loss: 665.698
+seq_len: 24, horizon: 12, epochs: 50, batch_size: 64, final loss: 47.105
+seq_len: 24, horizon: 12, epochs: 50, batch_size: 128, final loss: 113.010
+
+Top 3 models with lowest final loss:
+1. h12_ep50_bs64.pth | final loss: 47.105
+2. h6_ep50_bs64.pth | final loss: 48.240
+3. h6_ep50_bs128.pth | final loss: 101.092

@@ -6,6 +6,7 @@ import torch.nn as nn
 import pandas as pd
 import numpy as np
 import mlflow
+import shutil
 
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
@@ -179,6 +180,7 @@ if __name__ == "__main__":
     ]
 
     results = []
+    log_lines = []
 
     for seq_len, horizon, epochs, batch_size in itertools.product(
         SEQ_LENS, HORIZONS, EPOCHS, BATCH_SIZES
@@ -197,9 +199,26 @@ if __name__ == "__main__":
             "model_name": model_name,
             "loss": loss
         })
-        print(f"seq_len: {seq_len}, horizon: {horizon}, epochs: {epochs}, batch_size: {batch_size}, final loss: {loss:.3f}")
+        log_line = f"seq_len: {seq_len}, horizon: {horizon}, epochs: {epochs}, batch_size: {batch_size}, final loss: {loss:.3f}"
+        print(log_line)
+        log_lines.append(log_line)
 
     top3 = sorted(results, key=lambda x: x["loss"])[:3]
+    log_lines.append("\nTop 3 models with lowest final loss:")
     print("\nTop 3 models with lowest final loss:")
     for i, item in enumerate(top3, 1):
-        print(f"{i}. {item['model_name']} | final loss: {item['loss']:.3f}")
+        line = f"{i}. {item['model_name']} | final loss: {item['loss']:.3f}"
+        print(line)
+        log_lines.append(line)
+
+        
+    os.makedirs("training_logs", exist_ok=True)    
+    with open(os.path.join("training_logs", "train_results.log"), "w", encoding="utf-8") as f:
+        for line in log_lines:
+            f.write(line + "\n")
+    
+    os.makedirs("top3_models", exist_ok=True)
+    for item in top3:
+        src_path = os.path.join(MODEL_DIR, item["model_name"])
+        dst_path = os.path.join("top3_models", item["model_name"])
+        shutil.copy(src_path, dst_path)
