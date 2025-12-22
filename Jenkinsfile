@@ -53,7 +53,7 @@ pipeline {
                     echo "Waiting for Instance to be RUNNING..."
                     sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
                     // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
-                    Lấy Public IP
+                    //Lấy Public IP
                     env.INSTANCE_IP = sh(returnStdout: true, script: """
                         aws ec2 describe-instances \
                             --instance-ids ${env.INSTANCE_ID} \
@@ -76,7 +76,7 @@ pipeline {
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
                         echo "🔌 Connecting via SSH..."
-                        
+                        //test
                         // Cấu hình SSH: 
                         // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
                         // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
@@ -163,7 +163,7 @@ pipeline {
     }
 
 
-    Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
+    //Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
     post {
         always {
             script {
