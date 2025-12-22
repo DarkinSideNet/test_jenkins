@@ -153,6 +153,7 @@ pipeline {
                         
                         def remoteCommand = """
                             echo '--- STARTING PHASE 2 EVALUATION ---'
+                            cd test_jenkins
                             sudo chmod +x ./phase2_eval.sh
                             ./phase2_eval.sh
                             python3 upload_minio.py
