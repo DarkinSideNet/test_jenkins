@@ -18,35 +18,35 @@ pipeline {
     }
 
     stages {
-        stage('1. Launch EC2 Instance') {
-            steps {
-                // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
-                withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    script {
-                        echo "Launching EC2 Instance..."
+        // stage('1. Launch EC2 Instance') {
+        //     steps {
+        //         // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
+        //         withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+        //             script {
+        //                 echo "Launching EC2 Instance..."
                         
                         
-                        // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
-                        // Lệnh aws cli sẽ tự động nhận diện nó.
-                        def output = sh(returnStdout: true, script: """
-                            aws ec2 run-instances \
-                                --image-id ${EC2_AMI_ID} \
-                                --count 1 \
-                                --instance-type ${EC2_INSTANCE_TYPE} \
-                                --key-name ${EC2_KEY_NAME} \
-                                --security-group-ids ${EC2_SG_ID} \
-                                --region ${AWS_REGION} \
-                                --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
-                                --query 'Instances[0].InstanceId' \
-                                --output text
-                        """).trim()
+        //                 // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
+        //                 // Lệnh aws cli sẽ tự động nhận diện nó.
+        //                 def output = sh(returnStdout: true, script: """
+        //                     aws ec2 run-instances \
+        //                         --image-id ${EC2_AMI_ID} \
+        //                         --count 1 \
+        //                         --instance-type ${EC2_INSTANCE_TYPE} \
+        //                         --key-name ${EC2_KEY_NAME} \
+        //                         --security-group-ids ${EC2_SG_ID} \
+        //                         --region ${AWS_REGION} \
+        //                         --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
+        //                         --query 'Instances[0].InstanceId' \
+        //                         --output text
+        //                 """).trim()
                         
-                        env.INSTANCE_ID = output
-                        echo "Instance Created: ${env.INSTANCE_ID}"
-                    }
-                }
-            }
-        }
+        //                 env.INSTANCE_ID = output
+        //                 echo "Instance Created: ${env.INSTANCE_ID}"
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('2. Wait for IP & SSH Ready') {
             steps {
