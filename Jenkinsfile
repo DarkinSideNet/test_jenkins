@@ -8,7 +8,7 @@ pipeline {
         EC2_INSTANCE_TYPE = 'g4dn.xlarge'
         
         // Key Pair name ĐÃ TẠO TRÊN AWS CONSOLE
-        EC2_KEY_NAME = 'eks-key' 
+        EC2_KEY_NAME = 'test_gpu' 
         // ID của Security Group (phải mở port 22)
         EC2_SG_ID = 'sg-03dc5fdd0e2aac455' 
         PATH = "/var/jenkins_home/aws-cli-bin:${env.PATH}"
