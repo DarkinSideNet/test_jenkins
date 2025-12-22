@@ -1,9 +1,0 @@
-Dataset=case_1 | Model=h6_ep50_bs64.pth | Horizon=6 | MAE=6.5451 | RMSE=13.0634
-Dataset=case_1 | Model=h12_ep50_bs64.pth | Horizon=12 | MAE=8.4782 | RMSE=16.2510
-Dataset=case_1 | Model=h12_ep30_bs64.pth | Horizon=12 | MAE=9.0020 | RMSE=18.2312
-Dataset=case_2 | Model=h6_ep50_bs64.pth | Horizon=6 | MAE=7.8624 | RMSE=16.7942
-Dataset=case_2 | Model=h12_ep50_bs64.pth | Horizon=12 | MAE=7.6975 | RMSE=16.2815
-Dataset=case_2 | Model=h12_ep30_bs64.pth | Horizon=12 | MAE=9.3276 | RMSE=18.3613
-Dataset=case_3 | Model=h6_ep50_bs64.pth | Horizon=6 | MAE=4.6203 | RMSE=8.8328
-Dataset=case_3 | Model=h12_ep50_bs64.pth | Horizon=12 | MAE=6.3978 | RMSE=10.3535
-Dataset=case_3 | Model=h12_ep30_bs64.pth | Horizon=12 | MAE=7.9527 | RMSE=14.1053

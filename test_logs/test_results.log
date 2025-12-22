@@ -1,9 +1,0 @@
-Model: h6_ep50_bs64.pth | Horizon: 6 | MAE: 6.5451 | RMSE: 13.0634
-Model: h12_ep50_bs64.pth | Horizon: 12 | MAE: 8.4782 | RMSE: 16.2510
-Model: h12_ep30_bs64.pth | Horizon: 12 | MAE: 9.0020 | RMSE: 18.2312
-
-FINAL COMPARISON
-            model  horizon      mae      rmse
- h6_ep50_bs64.pth        6 6.545144 13.063432
-h12_ep50_bs64.pth       12 8.478159 16.251020
-h12_ep30_bs64.pth       12 9.002001 18.231229
