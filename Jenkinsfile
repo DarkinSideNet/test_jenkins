@@ -19,62 +19,62 @@ pipeline {
     }
 
     stages {
-        stage('1. Launch EC2 Instance') {
-            steps {
-                // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
-                withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    script {
-                        echo "Launching EC2 Instance..."
+        // stage('1. Launch EC2 Instance') {
+        //     steps {
+        //         // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
+        //         withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+        //             script {
+        //                 echo "Launching EC2 Instance..."
                         
                         
-                        // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
-                        // Lệnh aws cli sẽ tự động nhận diện nó.
-                        def output = sh(returnStdout: true, script: """
-                            aws ec2 run-instances \
-                                --image-id ${EC2_AMI_ID} \
-                                --count 1 \
-                                --instance-type ${EC2_INSTANCE_TYPE} \
-                                --key-name ${EC2_KEY_NAME} \
-                                --security-group-ids ${EC2_SG_ID} \
-                                --region ${AWS_REGION} \
-                                --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
-                                --query 'Instances[0].InstanceId' \
-                                --output text
-                        """).trim()
+        //                 // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
+        //                 // Lệnh aws cli sẽ tự động nhận diện nó.
+        //                 def output = sh(returnStdout: true, script: """
+        //                     aws ec2 run-instances \
+        //                         --image-id ${EC2_AMI_ID} \
+        //                         --count 1 \
+        //                         --instance-type ${EC2_INSTANCE_TYPE} \
+        //                         --key-name ${EC2_KEY_NAME} \
+        //                         --security-group-ids ${EC2_SG_ID} \
+        //                         --region ${AWS_REGION} \
+        //                         --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
+        //                         --query 'Instances[0].InstanceId' \
+        //                         --output text
+        //                 """).trim()
                         
-                        env.INSTANCE_ID = output
-                        echo "Instance Created: ${env.INSTANCE_ID}"
-                    }
-                }
-            }
-        }
+        //                 env.INSTANCE_ID = output
+        //                 echo "Instance Created: ${env.INSTANCE_ID}"
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('2. Wait for IP & SSH Ready') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    script {
-                        echo "Waiting for Instance to be RUNNING..."
-                        // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-                        // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
-                        //Lấy Public IP
-                         sleep 30
-                        env.INSTANCE_IP = sh(returnStdout: true, script: """
-                            aws ec2 describe-instances \
-                                --instance-ids ${env.INSTANCE_ID} \
-                                --region ${AWS_REGION} \
-                                --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                                --output text
-                        """).trim()
+        // stage('2. Wait for IP & SSH Ready') {
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+        //             script {
+        //                 echo "Waiting for Instance to be RUNNING..."
+        //                 // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+        //                 // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
+        //                 //Lấy Public IP
+        //                 sleep 30
+        //                 env.INSTANCE_IP = sh(returnStdout: true, script: """
+        //                     aws ec2 describe-instances \
+        //                         --instance-ids ${env.INSTANCE_ID} \
+        //                         --region ${AWS_REGION} \
+        //                         --query 'Reservations[0].Instances[0].PublicIpAddress' \
+        //                         --output text
+        //                 """).trim()
                         
-                        echo "Public IP: ${env.INSTANCE_IP}"
+        //                 echo "Public IP: ${env.INSTANCE_IP}"
                         
                         
-                        echo " Sleeping 60s for SSH Daemon to start..."
-                        sleep 10
-                    }
-                }
-            }
-        }
+        //                 echo " Sleeping 60s for SSH Daemon to start..."
+        //                 sleep 60
+        //             }
+        //         }
+        //     }
+        // }
         stage('3. SSH - Execute Training [phase 1]') {
             steps {
                 // Load file PEM từ Jenkins Credential vào biến file
