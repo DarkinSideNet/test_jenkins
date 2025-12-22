@@ -24,6 +24,15 @@ echo "--- [3] DOWNLOADING ---"
 mcli cp "myminio/devopsproject/dataset_daily/$DATA_FILE" ./dataset.csv
 mcli cp "myminio/devopsproject/current_model/$MODEL_FILE" ./model.pth
 
+if [ ! -f "dataset.csv" ] || [ ! -f "model.pth" ]; then
+    mcli alias set myminio https://minio.neikoscloud.net admin admin123
+    mcli cp "myminio/devopsproject/dataset_daily/$DATA_FILE" ./dataset.csv
+    mcli cp "myminio/devopsproject/current_model/$MODEL_FILE" ./model.pth
+else
+    echo "--- [RESULT] dataset.csv and model.pth already exist. Skipping download. ---"
+fi
+
+
 echo "--- [4] VERIFY ---"
 ls -lh dataset.csv model.pth
 echo "Everything is ready!"
