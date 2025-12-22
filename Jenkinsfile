@@ -11,7 +11,7 @@ pipeline {
         EC2_KEY_NAME = 'eks-key' 
         // ID của Security Group (phải mở port 22)
         EC2_SG_ID = 'sg-0677b9b15b8711d14' 
-        PATH = "/var/jenkins_home/bin:$PATH"
+        PATH = "/tmp/jenkins_home/bin:$PATH"
         // ID Credential lưu trong Jenkins (chứa file PEM)
         JENKINS_SSH_CRED_ID = 'ssh-eks-key' 
         AWS_CRED_ID = 'aws-credentials'
@@ -24,6 +24,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     script {
                         echo "Launching EC2 Instance..."
+                        
                         
                         // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
                         // Lệnh aws cli sẽ tự động nhận diện nó.
