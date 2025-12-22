@@ -1,5 +1,20 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: aws-tool
+    image: amazon/aws-cli:latest
+    command: ['cat']
+    tty: true
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+"""
+        }
+    }
     environment {
         // --- CẤU HÌNH AWS ---
         AWS_REGION = 'us-east-1'
