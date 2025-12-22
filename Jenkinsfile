@@ -125,6 +125,7 @@ pipeline {
                         
                         def remoteCommand = """
                             echo '--- PHASE 1 TRAINING ---'
+                            cd test_jenkins
                             sudo chmod +x ./setup_minio.sh
                             ./setup_minio.sh
                             python3 multi_train.py
