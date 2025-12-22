@@ -10,7 +10,7 @@ pipeline {
         // Key Pair name ĐÃ TẠO TRÊN AWS CONSOLE
         EC2_KEY_NAME = 'eks-key' 
         // ID của Security Group (phải mở port 22)
-        EC2_SG_ID = 'sg-0677b9b15b8711d14' 
+        EC2_SG_ID = 'sg-03dc5fdd0e2aac455' 
         PATH = "/var/jenkins_home/aws-cli-bin:${env.PATH}"
         // ID Credential lưu trong Jenkins (chứa file PEM)
         JENKINS_SSH_CRED_ID = 'ssh-eks-key' 
