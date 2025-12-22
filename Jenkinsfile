@@ -1,21 +1,5 @@
 pipeline {
-    agent {
-        kubernetes {
-            cloud 'kubernetes'
-            yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: aws-tool
-    image: amazon/aws-cli:latest
-    command: ['cat']
-    tty: true
-  - name: jnlp
-    image: jenkins/inbound-agent:latest
-"""
-        }
-    }
+    agent any
     environment {
         // --- CẤU HÌNH AWS ---
         AWS_REGION = 'us-east-1'
@@ -27,7 +11,7 @@ spec:
         EC2_KEY_NAME = 'eks-key' 
         // ID của Security Group (phải mở port 22)
         EC2_SG_ID = 'sg-0677b9b15b8711d14' 
-        PATH = "/tmp/jenkins_home/bin:$PATH"
+        PATH = "/var/jenkins_home/aws-cli-bin:${env.PATH}"
         // ID Credential lưu trong Jenkins (chứa file PEM)
         JENKINS_SSH_CRED_ID = 'ssh-eks-key' 
         AWS_CRED_ID = 'aws-credentials'
