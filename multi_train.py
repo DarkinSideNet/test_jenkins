@@ -4,6 +4,7 @@ import json
 import shutil
 import sys
 import datetime
+import sys
 
 class Logger(object):
     def __init__(self, filename):
@@ -50,7 +51,7 @@ def run_multi_experiments():
         data_path = "dataset.csv"
         print(f"\n>>> Starting Experiment {i}: {exp}")
         cmd = [
-            "python3", "weather_train_fire_tuning.py",
+            sys.executable, "weather_train_fire_tuning.py",
             "--data_path", data_path,
             "--output_path", out_path,
             "--epochs", str(exp["epochs"]),
