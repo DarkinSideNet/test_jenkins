@@ -55,6 +55,7 @@ pipeline {
                     // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
                     // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
                     //Lấy Public IP
+                    sleep 30
                     env.INSTANCE_IP = sh(returnStdout: true, script: """
                         aws ec2 describe-instances \
                             --instance-ids ${env.INSTANCE_ID} \
