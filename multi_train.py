@@ -47,7 +47,7 @@ def run_multi_experiments():
 
     for i, exp in enumerate(experiments):
         out_path = f"./exp_results/model_exp_{i}.pth"
-        data_path = "./dataset.csv"
+        data_path = "dataset.csv"
         print(f"\n>>> Starting Experiment {i}: {exp}")
         cmd = [
             "python", "weather_train_fire_tuning.py",

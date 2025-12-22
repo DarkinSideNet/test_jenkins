@@ -19,9 +19,9 @@ if [ -z "$DATA_FILE" ] || [ -z "$MODEL_FILE" ]; then
     mcli ls myminio/devopsproject/
     exit 1
 fi
-
+mcli alias set myminio https://minio.neikoscloud.net admin admin123
 echo "--- [3] DOWNLOADING ---"
-mcli cp "myminio/devopsproject/dataset_test/$DATA_FILE" ./dataset.csv
+mcli cp "myminio/devopsproject/dataset_daily/$DATA_FILE" ./dataset.csv
 mcli cp "myminio/devopsproject/current_model/$MODEL_FILE" ./model.pth
 
 echo "--- [4] VERIFY ---"

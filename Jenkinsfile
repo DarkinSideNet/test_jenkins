@@ -4,8 +4,8 @@ pipeline {
         // --- CẤU HÌNH AWS ---
         AWS_REGION = 'us-east-1'
         // AMI Ubuntu 22.04 LTS (Deep Learning Base AMI thì bạn thay ID khác)
-        EC2_AMI_ID = 'ami-0c398cb65a93047f2'
-        EC2_INSTANCE_TYPE = 't3.small'
+        EC2_AMI_ID = 'ami-0e4060c00953cd8bf'
+        EC2_INSTANCE_TYPE = 'g4dn.xlarge'
         
         // Key Pair name ĐÃ TẠO TRÊN AWS CONSOLE
         EC2_KEY_NAME = 'eks-key' 
@@ -14,7 +14,7 @@ pipeline {
         PATH = "/var/jenkins_home/bin:$PATH"
         // ID Credential lưu trong Jenkins (chứa file PEM)
         JENKINS_SSH_CRED_ID = 'ssh-eks-key' 
-        AWS_CRED_ID = 'aws-credentials-id'
+        AWS_CRED_ID = 'aws-credentials'
     }
 
     stages {
@@ -93,7 +93,8 @@ pipeline {
                             curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
                             chmod +x mcli
                             sudo mv mcli /usr/local/bin/mcli
-                            pip install -r test_jenkins/requirements.txt
+                            cd test_jenkins
+                            pip install -r requirements.txt
                             echo '--- DONE ---'
                         """
 
@@ -119,9 +120,9 @@ pipeline {
                         
                         def remoteCommand = """
                             echo '--- PHASE 1 TRAINING ---'
-                            sudo chmod +x ./test_jenkins/setup_minio.sh
-                            ./test_jenkins/setup_minio.sh
-                            python3 test_jenkins/multi_train.py
+                            sudo chmod +x ./setup_minio.sh
+                            ./setup_minio.sh
+                            python3 multi_train.py
                             echo '--- DONE ---'
                         """
 
@@ -146,9 +147,9 @@ pipeline {
                         
                         def remoteCommand = """
                             echo '--- STARTING PHASE 2 EVALUATION ---'
-                            sudo chmod +x ./test_jenkins/phase2_eval.sh
-                            ./test_jenkins/phase2_eval.sh
-                            python3 test_jenkins/upload_minio.py
+                            sudo chmod +x ./phase2_eval.sh
+                            ./phase2_eval.sh
+                            python3 upload_minio.py
                             echo '--- DONE ---'
                         """
 

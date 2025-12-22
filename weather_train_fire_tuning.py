@@ -14,7 +14,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils import weight_norm
 from s3io import read_csv
 
-DATA_PATH = "./weather_dataset.csv"
+DATA_PATH = "./dataset.csv"
 MODEL_OUTPUT_PATH = "./model.pth"
 
 # Thư viện OTO đã được gỡ bỏ

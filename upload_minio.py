@@ -22,7 +22,9 @@ def upload_folders_to_minio():
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
     # Danh sách các thư mục cần upload
-    folders_to_upload = ['best_models', 'exp_results', 'production_ready']
+    folders_to_upload = ['best_models', 'exp_results', 'production_ready', 'logs']
+    prod_model_local = "production_ready/weather_prod_model.pth"
+    static_s3_path = "current_model/model.pth"
     
     print(f"--- Bắt đầu upload lên path: {BASE_PATH}/{timestamp} ---")
 
@@ -45,6 +47,16 @@ def upload_folders_to_minio():
                     print(f"Đã upload: {local_path} -> {s3_path}")
                 except Exception as e:
                     print(f"Lỗi khi upload {local_path}: {e}")
+
+        if os.path.exists(prod_model_local):
+            print(f"\n--- Đang cập nhật model bản production vào: {static_s3_path} ---")
+            try:
+                s3_client.upload_file(prod_model_local, BUCKET_NAME, static_s3_path)
+                print(f"Thành công: Đã ghi đè {prod_model_local} -> {static_s3_path}")
+            except Exception as e:
+                print(f"Lỗi khi ghi đè model current: {e}")
+        else:
+            print(f"Cảnh báo: Không tìm thấy {prod_model_local} để cập nhật bản current.")
 
     print("--- Hoàn thành pipeline upload ---")
 
