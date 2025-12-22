@@ -57,7 +57,7 @@ pipeline {
                         // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
                         // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
                         //Lấy Public IP
-                        sleep 30
+                        // sleep 30
                         env.INSTANCE_IP = sh(returnStdout: true, script: """
                             aws ec2 describe-instances \
                                 --instance-ids ${env.INSTANCE_ID} \
@@ -70,46 +70,46 @@ pipeline {
                         
                         
                         echo " Sleeping 60s for SSH Daemon to start..."
-                        sleep 10
+                        // sleep 10
                     }
                 }
             }
         }
-        stage('3. SSH - Execute Training [phase 1]') {
-            steps {
-                // Load file PEM từ Jenkins Credential vào biến file
-                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
-                    script {
-                        echo "🔌 Connecting via SSH..."
-                        //test
-                        // Cấu hình SSH: 
-                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+        // stage('3. SSH - Execute Training [phase 1]') {
+        //     steps {
+        //         // Load file PEM từ Jenkins Credential vào biến file
+        //         sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+        //             script {
+        //                 echo "🔌 Connecting via SSH..."
+        //                 //test
+        //                 // Cấu hình SSH: 
+        //                 // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
+        //                 // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
                         
-                        def remoteCommand = """
-                            echo '--- FROM EC2 G4DN ---'
-                            hostname
-                            whoami
-                            echo '--- SYSTEM SETUP ---'
-                            sudo apt update
-                            sudo apt install net-tools
-                            sudo apt install python3-pip -y
-                            git clone https://github.com/DarkinSideNet/test_jenkins.git
-                            curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
-                            chmod +x mcli
-                            sudo mv mcli /usr/local/bin/mcli
-                            cd test_jenkins
-                            pip install -r requirements.txt
-                            echo '--- DONE ---'
-                        """
+        //                 def remoteCommand = """
+        //                     echo '--- FROM EC2 G4DN ---'
+        //                     hostname
+        //                     whoami
+        //                     echo '--- SYSTEM SETUP ---'
+        //                     sudo apt update
+        //                     sudo apt install net-tools
+        //                     sudo apt install python3-pip -y
+        //                     git clone https://github.com/DarkinSideNet/test_jenkins.git
+        //                     curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
+        //                     sudo chmod +x mcli
+        //                     sudo mv mcli /usr/local/bin/mcli
+        //                     cd test_jenkins
+        //                     pip install -r requirements.txt
+        //                     echo '--- DONE ---'
+        //                 """
 
-                        // Thực thi lệnh từ xa
-                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+        //                 // Thực thi lệnh từ xa
+        //                  sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
 
-                    }
-                }
-            }
-        }
+        //             }
+        //         }
+        //     }
+        // }
         
 
         stage('4. SSH - Execute Training [phase 1]') {
