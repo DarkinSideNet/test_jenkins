@@ -50,7 +50,7 @@ def run_multi_experiments():
         data_path = "dataset.csv"
         print(f"\n>>> Starting Experiment {i}: {exp}")
         cmd = [
-            "python", "weather_train_fire_tuning.py",
+            "python3", "weather_train_fire_tuning.py",
             "--data_path", data_path,
             "--output_path", out_path,
             "--epochs", str(exp["epochs"]),
