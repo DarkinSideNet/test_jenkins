@@ -52,7 +52,7 @@ pipeline {
             steps {
                 script {
                     echo "Waiting for Instance to be RUNNING..."
-                    sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+                    // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
                     // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
                     //Lấy Public IP
                     env.INSTANCE_IP = sh(returnStdout: true, script: """
