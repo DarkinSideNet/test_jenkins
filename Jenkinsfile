@@ -169,7 +169,7 @@ pipeline {
     }
 
 
-    Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
+    //hối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
     post {
         always {
             script {
