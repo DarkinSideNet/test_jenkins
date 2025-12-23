@@ -175,10 +175,9 @@ pipeline {
                     script {
                         // Đảm bảo đã login Docker (Sử dụng Jenkins Credentials)
                         withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
-                            
                             // Chạy script hoặc các lệnh build trực tiếp
                             def remoteCommand = """
+                                docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
                                 git clone https://github.com/DarkinSideNet/FastApi_dev.git
                                 cp test_jenkins/best_model_final/weather_model_production.pth FastApi_dev/model.pth
                                 docker build -t ne1kos0/weather-tcn-api:latest ./FastApi_dev
