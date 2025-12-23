@@ -225,15 +225,15 @@ pipeline {
                                 git clone https://github.com/DarkinSideNet/DevOps_Projects.git ~/DevOps_Projects
                                 cd ~/DevOps_Projects/charts/fastapi-ml/
                                 
-                                # 4. Sửa file values-prod.yaml bằng biến động (Sử dụng v88-b796dc7)
-                                sed -i 's/tag: .*/tag: "v88-b796dc7"/' values-prod.yaml
+                                # 4. Sửa file values-prod.yaml bằng biến động (Sử dụng v78-b796dc7)
+                                sed -i 's/tag: .*/tag: "v78-b796dc7"/' values-prod.yaml
                                 
                                 # 5. Cấu hình Remote URL chứa Token để không bị hỏi mật khẩu khi Push
                                 git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/DarkinSideNet/DevOps_Projects.git
                                 
                                 # 6. Commit và Push
                                 git add values-prod.yaml
-                                git commit -m "image-updater: update to v88-b796dc7"
+                                git commit -m "image-updater: update to v78-b796dc7"
                                 git push origin main
                             """
                             
