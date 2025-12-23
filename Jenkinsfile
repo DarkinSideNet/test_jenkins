@@ -75,7 +75,7 @@ pipeline {
                 }
             }
         }
-        stage('3. SSH - Execute Training [phase 1]') {
+        stage('3. SSH - Setup for Training [phase 1]') {
             steps {
                 // Load file PEM từ Jenkins Credential vào biến file
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
@@ -113,7 +113,7 @@ pipeline {
         }
         
 
-        stage('4. SSH - Execute Training [phase 1]') {
+        stage('4. SSH - Incremental Training [phase 1]') {
             steps {
                 // Load file PEM từ Jenkins Credential vào biến file
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
