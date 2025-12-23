@@ -58,8 +58,15 @@ def test_one_model(model_path, df_test):
     targets = checkpoint["targets"]
     seq_len = cfg["seq_len"]
     horizon = cfg["horizon"]
-    scaler_X = checkpoint["scaler_X"]
-
+    if "scaler_X" in checkpoint:
+        scaler_X = checkpoint["scaler_X"]
+    else:
+        # Nếu model lưu kiểu cũ (mean/scale rời rạc), ta tự tạo lại scaler
+        from sklearn.preprocessing import StandardScaler
+        scaler_X = StandardScaler()
+        scaler_X.mean_ = np.array(checkpoint["scaler_mean"])
+        scaler_X.scale_ = np.array(checkpoint["scaler_scale"])
+        scaler_X.n_features_in_ = len(features)
     X_test, y_test = prepare_data(df_test, features, targets, horizon, seq_len, scaler_X)
     
     if len(X_test) == 0:

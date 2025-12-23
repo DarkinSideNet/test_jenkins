@@ -1,87 +1,43 @@
 import os
 import subprocess
 import pandas as pd
+import shutil
 
-# =====================
-# CONFIG
-# =====================
-# Tự động quét tất cả file .csv trong folder dataset_test
+# Cấu hình
 DATASET_DIR = "dataset_test"
-TEST_DATASETS = sorted([
-    os.path.join(DATASET_DIR, f) 
-    for f in os.listdir(DATASET_DIR) 
-    if f.endswith(".csv")
-])
-
 LOG_DIR = "test_logs"
 EVAL_LOG_DIR = "evaluation_logs"
-DETAIL_PATH = os.path.join(EVAL_LOG_DIR, "evaluation_detail.csv")
 SUMMARY_PATH = os.path.join(EVAL_LOG_DIR, "evaluation_summary.csv")
 
-# Tạo thư mục nếu chưa có
+# 1. Làm sạch dữ liệu cũ để tránh sai lệch báo cáo
+if os.path.exists(LOG_DIR):
+    shutil.rmtree(LOG_DIR)
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(EVAL_LOG_DIR, exist_ok=True)
 
-# =====================
-# 1. CHẠY TEST CASES
-# =====================
-print(f"🚀 Found {len(TEST_DATASETS)} datasets in {DATASET_DIR}. Starting tests...")
+# 2. Quét dữ liệu và chạy test
+TEST_DATASETS = sorted([os.path.join(DATASET_DIR, f) for f in os.listdir(DATASET_DIR) if f.endswith(".csv")])
 
+print(f"🚀 Chạy đánh giá trên {len(TEST_DATASETS)} datasets...")
 for idx, data_path in enumerate(TEST_DATASETS, 1):
     case_name = f"case_{idx}"
-    print(f"\n▶️ Running {case_name} | Data: {os.path.basename(data_path)} ...")
-    
-    # Gọi file test duy nhất kèm tham số đầu vào
-    # --data: đường dẫn file csv
-    # --out_name: tên file kết quả (case_1, case_2...)
-    subprocess.run([
-        "python3", "weather_test.py", 
-        "--data", data_path, 
-        "--out_name", case_name
-    ])
+    subprocess.run(["python3", "weather_test.py", "--data", data_path, "--out_name", case_name])
 
-# =====================
-# 2. TỔNG HỢP KẾT QUẢ
-# =====================
-print("\n📊 Aggregating results...")
+# 3. Tổng hợp kết quả thành file Summary
 all_results = []
-
-# Quét lại folder test_logs để tìm các file case_X_result.csv vừa tạo ra
 for idx in range(1, len(TEST_DATASETS) + 1):
-    case_csv = os.path.join(LOG_DIR, f"case_{idx}_result.csv")
-    
-    if os.path.exists(case_csv):
-        df_case = pd.read_csv(case_csv)
-        # Thêm cột để biết kết quả này từ dataset nào
-        df_case["test_dataset"] = os.path.basename(TEST_DATASETS[idx-1])
-        all_results.append(df_case)
-    else:
-        print(f"❌ Warning: Result file {case_csv} not found.")
+    csv_path = os.path.join(LOG_DIR, f"case_{idx}_result.csv")
+    if os.path.exists(csv_path):
+        all_results.append(pd.read_csv(csv_path))
 
-if not all_results:
-    print("❌ No results found. Evaluation failed.")
-    exit(1)
+if all_results:
+    df_detail = pd.concat(all_results, ignore_index=True)
+    summary = df_detail.groupby("model")[["mae", "rmse"]].mean().reset_index().sort_values("rmse")
+    summary.to_csv(SUMMARY_PATH, index=False)
+    print(f"✅ Đã lưu Summary tại: {SUMMARY_PATH}")
 
-# Gộp tất cả chi tiết
-df_detail = pd.concat(all_results, ignore_index=True)
-df_detail.to_csv(DETAIL_PATH, index=False)
-print(f"✅ Saved detailed results to: {DETAIL_PATH}")
-
-# =====================
-# 3. TÍNH TOÁN SUMMARY
-# =====================
-# Tính trung bình MAE và RMSE của mỗi model dựa trên tất cả các test case
-summary = (
-    df_detail
-    .groupby("model")[["mae", "rmse"]]
-    .mean()
-    .reset_index()
-    .sort_values("rmse")
-)
-summary.to_csv(SUMMARY_PATH, index=False)
-
-print("\n🏆 FINAL SUMMARY (Averaged across all test datasets)")
-print("-" * 60)
-print(summary.to_string(index=False))
-print("-" * 60)
-print(f"✅ Summary saved to: {SUMMARY_PATH}")
+    # 4. GỌI FILE RIÊNG CỦA BẠN ĐỂ CHỌN MODEL TỐT NHẤT
+    print("\n🏆 Đang tìm kiếm Champion...")
+    subprocess.run(["python3", "select_best_model_2.py"])
+else:
+    print("❌ Không có kết quả nào để tổng hợp.")
