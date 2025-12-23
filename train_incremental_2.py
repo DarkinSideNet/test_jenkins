@@ -48,7 +48,7 @@ BASE_MODEL_DIR = "./"
 # Thư mục xuất kết quả incremental
 INC_MODEL_DIR = "models_incremental"
 EXPERIMENT_NAME = "weather_incremental_training"
-
+os.environ["MLFLOW_TRACKING_URI"] = "https://mlflow.neikoscloud.net"
 # =====================
 # UTILS
 # =====================
@@ -82,6 +82,8 @@ def train_incremental_case(df, features, cfg, base_checkpoint_path):
     if not os.path.exists(base_checkpoint_path):
         print(f"⚠️ Không tìm thấy model gốc tại {base_checkpoint_path}. Bỏ qua case này.")
         return None
+    mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI"))
+    mlflow.set_experiment(EXPERIMENT_NAME)
 
     mlflow.start_run(run_name=f"Inc_{name}")
     try:
@@ -150,6 +152,7 @@ def train_incremental_case(df, features, cfg, base_checkpoint_path):
             "scaler_scale": scaler_X.scale_.tolist(),
             "config": cfg,
         }, save_path)
+        mlflow.log_artifact(save_path, artifact_path="models")
 
         avg_last = np.mean(loss_values[-5:]) if len(loss_values) >= 5 else np.mean(loss_values)
         return avg_last
