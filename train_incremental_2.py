@@ -192,7 +192,7 @@ if __name__ == "__main__":
         # Đường dẫn tới model gốc (Giả sử bạn để model gốc trong production_ready 
         # hoặc có thể trỏ thẳng vào thư mục 'models' của train_base)
         # Ở đây tôi mặc định tìm file có cùng 'horizon' vì đó là yếu tố quan trọng nhất của kiến trúc đầu ra
-        base_model_path = f"production_ready/weather_prod_model.pth" 
+        base_model_path = f"current_model/model.pth" 
         # Nếu bạn muốn mỗi case fine-tune từ đúng case cũ, hãy đổi thành:
         # base_model_path = f"models/h{horizon}_ep{epochs}_bs{batch_size}.pth"
 
