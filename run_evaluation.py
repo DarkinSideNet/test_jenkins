@@ -42,7 +42,7 @@ with mlflow.start_run(run_name=f"Eval_Batch_{pd.Timestamp.now().strftime('%Y%m%d
         summary.to_csv(SUMMARY_PATH, index=False)
         
         # LOG LÊN MLFLOW
-        mlflow.log_artifact(SUMMARY_PATH)
+        # mlflow.log_artifact(SUMMARY_PATH)
         mlflow.log_metric("global_avg_rmse", summary["rmse"].mean())
 
         print("\n🏆 Đang tìm kiếm Champion...")

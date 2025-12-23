@@ -152,7 +152,7 @@ def train_incremental_case(df, features, cfg, base_checkpoint_path):
             "scaler_scale": scaler_X.scale_.tolist(),
             "config": cfg,
         }, save_path)
-        mlflow.log_artifact(save_path, artifact_path="models")
+        # mlflow.log_artifact(save_path, artifact_path="models")
 
         avg_last = np.mean(loss_values[-5:]) if len(loss_values) >= 5 else np.mean(loss_values)
         return avg_last

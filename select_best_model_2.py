@@ -40,8 +40,8 @@ def select_the_champion():
         mlflow.log_param("champion_model", best_model_name)
         mlflow.log_metric("best_rmse", best_rmse)
         # Log cả model và file info lên server
-        mlflow.log_artifact(info_path)
-        mlflow.log_artifact(destination_path, artifact_path="production_ready")
+        # mlflow.log_artifact(info_path)
+        # mlflow.log_artifact(destination_path, artifact_path="production_ready")
 
     print(f"✅ Đã chọn Champion: {best_model_name} với RMSE: {best_rmse:.4f}")
 if __name__ == "__main__":
