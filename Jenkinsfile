@@ -173,6 +173,8 @@ pipeline {
             steps {
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
+                        def IMAGE_TAG = "v${env.BUILD_NUMBER}"
+                        def DOCKER_REPO = "ne1kos0/weather-tcn-api"
                         // Đảm bảo đã login Docker (Sử dụng Jenkins Credentials)
                         withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                             // Chạy script hoặc các lệnh build trực tiếp
@@ -182,11 +184,26 @@ pipeline {
                                 git clone https://github.com/DarkinSideNet/FastApi_dev.git
                                 cp test_jenkins/best_model_final/weather_model_production.pth FastApi_dev/model.pth
                                 cd FastApi_dev/
-                                docker build -t ne1kos0/weather-tcn-api:latest ./FastApi_dev
-                                docker push ne1kos0/weather-tcn-api:latest
+                                docker build -t ne1kos0/weather-tcn-api:${IMAGE_TAG} .
+                                docker push ne1kos0/weather-tcn-api:${IMAGE_TAG}
                             '''
                             sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
                         }
+                        echo "📝 Updating Git Manifest with Tag: ${IMAGE_TAG}"
+                        sh """
+                            # Cấu hình Git user
+                            git config user.email "jenkins@neikoscloud.net"
+                            git config user.name "Jenkins CI/CD"
+                            git clone https://github.com/DarkinSideNet/DevOps_Projects.git
+                            cd DevOps_Projects/charts/fastapi-ml/
+                            # Sửa file values.yaml (Tìm dòng tag: và thay thế giá trị)
+                            # Lệnh sed này sẽ tìm dòng bắt đầu bằng '  tag:' và thay bằng tag mới
+                            sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' values-prod.yaml
+                            # Commit và Push
+                            git add values-prod.yam
+                            git commit -m "image-updater: update ${DOCKER_REPO} to ${IMAGE_TAG}"
+                            git push origin main
+                        """
                     }
                 }
             }
