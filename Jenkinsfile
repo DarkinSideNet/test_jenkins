@@ -155,7 +155,6 @@ pipeline {
                             echo '--- STARTING PHASE 2 EVALUATION ---'
                             cd test_jenkins
                             python3 run_evaluation.py
-                            sudo chmod +x ./upload_minio.py
                             python3 ./upload_minio.py
                             echo '--- DONE ---'
                         """
@@ -170,23 +169,23 @@ pipeline {
     }
 
 
-    //Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
-    // post {
-    //     always {
-    //         script {
-    //             // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
-    //             if (env.INSTANCE_ID) {
-    //                 echo "TERMINATING INSTANCE ${env.INSTANCE_ID}..."
-    //                 // Phải dùng credentials ở đây để có quyền Admin xóa máy
-    //                 withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-    //                     sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-    //                 }
-    //                 echo " Instance terminated."
-    //             }
-    //         }
-    //     }
-    //     failure {
-    //         echo " Pipeline Failed! Check logs."
-    //     }
-    // }
+    Khối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
+    post {
+        always {
+            script {
+                // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
+                if (env.INSTANCE_ID) {
+                    echo "TERMINATING INSTANCE ${env.INSTANCE_ID}..."
+                    // Phải dùng credentials ở đây để có quyền Admin xóa máy
+                    withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                        sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+                    }
+                    echo " Instance terminated."
+                }
+            }
+        }
+        failure {
+            echo " Pipeline Failed! Check logs."
+        }
+    }
 }
