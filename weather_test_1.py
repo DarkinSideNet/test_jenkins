@@ -3,13 +3,13 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-
-MODEL_DIR = "models"
-MODEL_NAMES = [
-    "h6_ep50_bs64.pth",
-    "h12_ep50_bs64.pth",
-    "h6_ep30_bs64.pth",
-]
+import os
+MODEL_DIR = "top3_models_incremental"
+if os.path.exists(MODEL_DIR):
+    MODEL_NAMES = [f for f in os.listdir(MODEL_DIR) if f.endswith(".pth")]
+else:
+    MODEL_NAMES = []
+    print(f"Cảnh báo: Thư mục {MODEL_DIR} không tồn tại!")
 DATASET_PATH = "dataset_test/weather_2025-01-01_to_2025-01-02.csv"
 TARGETS = [
     "temperature", "feels_like", "humidity", "wind_speed", "gust_speed", "pressure", "precipitation",
@@ -49,12 +49,14 @@ class TCN(torch.nn.Module):
 
 def test_one_model(model_path, df_test):
     checkpoint = torch.load(model_path, weights_only=False)
+    config = checkpoint["config"]
     features = checkpoint["features"]
     targets = checkpoint["targets"]
     seq_len = checkpoint["seq_len"]
     horizon = checkpoint["horizon"]
     scaler_mean = np.array(checkpoint["scaler_mean"])
     scaler_scale = np.array(checkpoint["scaler_scale"])
+    scaler_X = checkpoint["scaler_X"]
     scaler_X = StandardScaler()
     scaler_X.mean_ = scaler_mean
     scaler_X.scale_ = scaler_scale

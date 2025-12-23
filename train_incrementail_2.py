@@ -36,7 +36,7 @@ class TCN(nn.Module):
 SEQ_LENS = [24]
 HORIZONS = [6, 12]
 EPOCHS = [30, 50]
-BATCH_SIZES = [64, 128]
+BATCH_SIZES = [8, 16, 32]
 
 TARGETS = [
     "temperature", "feels_like", "humidity", "wind_speed", "gust_speed", "pressure", "precipitation",
