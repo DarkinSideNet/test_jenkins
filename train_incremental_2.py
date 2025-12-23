@@ -44,7 +44,7 @@ TARGETS = [
 ]
 
 # Thư mục chứa model gốc để fine-tune
-BASE_MODEL_DIR = "./production_ready" 
+BASE_MODEL_DIR = "./" 
 # Thư mục xuất kết quả incremental
 INC_MODEL_DIR = "models_incremental"
 EXPERIMENT_NAME = "weather_incremental_training"
