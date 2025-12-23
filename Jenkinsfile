@@ -16,6 +16,10 @@ pipeline {
         JENKINS_SSH_CRED_ID = 'ssh-eks-key' 
         AWS_CRED_ID = 'aws-credentials'
         DOCKER_HUB_CREDS = 'docker-hub-creds'
+        GITHUB_CRED_ID = 'github-creds-id'
+        SHORT_SHA = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+        IMAGE_TAG = "v${env.BUILD_NUMBER}-${SHORT_SHA}"
+        DOCKER_REPO = "ne1kos0/weather-tcn-api"
         
     }
 
@@ -169,36 +173,73 @@ pipeline {
         //     }
         // }
 
-        stage('Deploy to Docker Hub') {
+        // stage('Deploy to Docker Hub') {
+        //     steps {
+        //         sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+        //             script {
+                        
+        //                 echo "📦 Generated Tag: ${IMAGE_TAG}"
+                       
+        //                 withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                           
+        //                     def remoteCommand = """
+        //                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+        //                         git clone https://github.com/DarkinSideNet/FastApi_dev.git
+        //                         cp test_jenkins/best_model_final/weather_model_production.pth FastApi_dev/model.pth
+        //                         cd FastApi_dev/
+        //                         docker build -t ne1kos0/weather-tcn-api:${IMAGE_TAG} .
+        //                         docker push ne1kos0/weather-tcn-api:${IMAGE_TAG}
+
+                                
+
+        //                     """
+        //                     sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
+        //                 }
+                        
+        //             }
+        //         }
+        //     }
+        // }
+        stage('Deploy to git Hub') {
             steps {
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
-                        def SHORT_SHA = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                        def IMAGE_TAG = "v${env.BUILD_NUMBER}-${SHORT_SHA}"
-                        def DOCKER_REPO = "ne1kos0/weather-tcn-api"
-                        echo "📦 Generated Tag: ${IMAGE_TAG}"
-                       
-                        withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                           
-                            def remoteCommand = """
-                                
-
-                                git config user.email "jenkins@neikoscloud.net"
-                                git config user.name "Jenkins CI/CD"
-                                git clone https://github.com/DarkinSideNet/DevOps_Projects.git
-                                cd DevOps_Projects/charts/fastapi-ml/
-                                # Sửa file values.yaml (Tìm dòng tag: và thay thế giá trị)
-                                # Lệnh sed này sẽ tìm dòng bắt đầu bằng '  tag:' và thay bằng tag mới
-                                sed -i 's/tag: .*/tag: "v78-b796dc7"/' values-prod.yaml
-                                # Commit và Push
-                                git add values-prod.yaml
-                                git commit -m "image-updater: update ${DOCKER_REPO} to v78-b796dc7"
-                                git push
-                                
-                            """
-                            sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
-                        }
+                        // Đảm bảo biến IMAGE_TAG đã được định nghĩa ở các stage trước
+                        echo "📦 Deploying with Tag: ${IMAGE_TAG}"
+                    
+                        withCredentials([usernamePassword(credentialsId: GITHUB_CRED_ID, 
+                                        usernameVariable: 'GIT_USER', 
+                                        passwordVariable: 'GIT_TOKEN')]) {
                         
+                            // Sử dụng nháy kép cho remoteCommand để Jenkins giải mã được ${IMAGE_TAG}
+                            def remoteCommand = """
+                                set -e
+                                # 1. Dọn dẹp thư mục cũ để clone mới
+                                rm -rf ~/DevOps_Projects
+                                
+                                # 2. Cấu hình định danh Git
+                                git config --global user.email "jenkins@neikoscloud.net"
+                                git config --global user.name "Jenkins CI/CD"
+                                
+                                # 3. Clone repo
+                                git clone https://github.com/DarkinSideNet/DevOps_Projects.git ~/DevOps_Projects
+                                cd ~/DevOps_Projects/charts/fastapi-ml/
+                                
+                                # 4. Sửa file values-prod.yaml bằng biến động (Sử dụng v88-b796dc7)
+                                sed -i 's/tag: .*/tag: "v88-b796dc7"/' values-prod.yaml
+                                
+                                # 5. Cấu hình Remote URL chứa Token để không bị hỏi mật khẩu khi Push
+                                git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/DarkinSideNet/DevOps_Projects.git
+                                
+                                # 6. Commit và Push
+                                git add values-prod.yaml
+                                git commit -m "image-updater: update to v88-b796dc7"
+                                git push origin main
+                            """
+                            
+                            // Thực thi lệnh SSH
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'GIT_USER=$GIT_USER GIT_TOKEN=$GIT_TOKEN bash -s' << 'EOF'\n${remoteCommand}\nEOF"
+                        }
                     }
                 }
             }
