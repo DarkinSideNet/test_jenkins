@@ -177,7 +177,7 @@ pipeline {
                             sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
                             
                             // Chạy script hoặc các lệnh build trực tiếp
-                            def remoteCommand """
+                            def remoteCommand = """
                                 git clone https://github.com/DarkinSideNet/FastApi_dev.git
                                 cp test_jenkins/best_model_final/weather_model_production.pth FastApi_dev/model.pth
                                 docker build -t ne1kos0/weather-tcn-api:latest ./FastApi_dev
