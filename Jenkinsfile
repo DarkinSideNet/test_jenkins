@@ -155,8 +155,8 @@ pipeline {
                             echo '--- STARTING PHASE 2 EVALUATION ---'
                             cd test_jenkins
                             python3 run_evaluation.py
-                            sudo chmod +x ./upload_minio.sh
-                            ./upload_minio.sh
+                            sudo chmod +x ./upload_minio.py
+                            python3 ./upload_minio.py
                             echo '--- DONE ---'
                         """
 

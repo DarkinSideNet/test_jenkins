@@ -44,6 +44,35 @@ def download_file(object_name, local_path):
         print(f"Error downloading {object_name}: {e}")
         return False
 
+
+def download_directory(minio_prefix, local_dir):
+    """Tải TOÀN BỘ thư mục từ MinIO về local"""
+    print(f"--- [NEW] DOWNLOADING ENTIRE DIRECTORY: {minio_prefix} ---")
+    try:
+        # recursive=True để lấy tất cả file trong thư mục con nếu có
+        objects = client.list_objects(BUCKET_NAME, prefix=minio_prefix, recursive=True)
+        
+        count = 0
+        for obj in objects:
+            # Bỏ qua nếu là chính cái folder (một số S3 provider có object kết thúc bằng /)
+            if obj.object_name.endswith('/'):
+                continue
+                
+            # Tạo đường dẫn local tương ứng
+            # Ví dụ: dataset_test/file1.csv -> ./dataset_test/file1.csv
+            # Dùng os.path.relpath để lấy phần sau prefix nếu bạn muốn bỏ prefix gốc
+            relative_path = obj.object_name
+            local_file_path = os.path.join(".", relative_path)
+            
+            if download_file(obj.object_name, local_file_path):
+                count += 1
+        
+        print(f"Successfully downloaded {count} files from {minio_prefix}")
+        return True
+    except Exception as e:
+        print(f"Error downloading directory {minio_prefix}: {e}")
+        return False
+
 def main():
     print("--- [1 & 2] SEARCHING FOR LATEST FILES ---")
     
@@ -79,12 +108,16 @@ def main():
         if not success_data or not success_model:
             print("Download failed!")
             sys.exit(1)
+    download_directory("dataset_test/", "./dataset_test/")
 
     print("--- [4] VERIFY ---")
     for path in [local_data, local_model]:
         if os.path.exists(path):
             size = os.path.getsize(path) / 1024
             print(f"{path}: {size:.2f} KB")
+    if os.path.exists("dataset_test/"):
+        files = os.listdir("dataset_test/")
+        print(f"Files in dataset_test/: {len(files)} files found.")
     
     print("Everything is ready!")
 
