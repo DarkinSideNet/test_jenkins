@@ -177,9 +177,9 @@ pipeline {
                         def IMAGE_TAG = "v${env.BUILD_NUMBER}-${SHORT_SHA}"
                         def DOCKER_REPO = "ne1kos0/weather-tcn-api"
                         echo "📦 Generated Tag: ${IMAGE_TAG}"
-                        Đảm bảo đã login Docker (Sử dụng Jenkins Credentials)
+                       
                         withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            // Chạy script hoặc các lệnh build trực tiếp
+                           
                             def remoteCommand = """
                                 
 
