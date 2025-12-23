@@ -38,6 +38,7 @@ pipeline {
                                 --key-name ${EC2_KEY_NAME} \
                                 --security-group-ids ${EC2_SG_ID} \
                                 --region ${AWS_REGION} \
+                                --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":80,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
                                 --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
                                 --query 'Instances[0].InstanceId' \
                                 --output text
