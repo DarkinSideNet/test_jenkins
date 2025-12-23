@@ -6,7 +6,7 @@ pipeline {
         // AMI Ubuntu 22.04 LTS (Deep Learning Base AMI thì bạn thay ID khác)
         EC2_AMI_ID = 'ami-0e4060c00953cd8bf'
         EC2_INSTANCE_TYPE = 'g4dn.xlarge'
-        
+        // test
         // Key Pair name ĐÃ TẠO TRÊN AWS CONSOLE
         EC2_KEY_NAME = 'test_gpu' 
         // ID của Security Group (phải mở port 22)
