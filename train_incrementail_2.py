@@ -66,7 +66,7 @@ def prepare_data_incremental(df, features, targets, horizon, seq_len, scaler_X):
     df.dropna(inplace=True)
     
     # Sử dụng scaler cũ để transform data mới (quan trọng trong incremental)
-    X = scaler_X.transform(df[features])
+    X = scaler_X.transform(df[features].values)
     y = df[[f"{t}_y" for t in targets]].values
     
     X_seq, y_seq = create_sequences(X, y, seq_len)
