@@ -20,161 +20,163 @@ pipeline {
     }
 
     stages {
-        stage('1. Launch EC2 Instance') {
-            steps {
-                // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
-                withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    script {
-                        echo "Launching EC2 Instance..."
+        // stage('1. Launch EC2 Instance') {
+        //     steps {
+        //         // BƯỚC QUAN TRỌNG: Load AWS Key vào biến môi trường
+        //         withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+        //             script {
+        //                 echo "Launching EC2 Instance..."
                         
                         
-                        // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
-                        // Lệnh aws cli sẽ tự động nhận diện nó.
-                        def output = sh(returnStdout: true, script: """
-                            aws ec2 run-instances \
-                                --image-id ${EC2_AMI_ID} \
-                                --count 1 \
-                                --instance-type ${EC2_INSTANCE_TYPE} \
-                                --key-name ${EC2_KEY_NAME} \
-                                --security-group-ids ${EC2_SG_ID} \
-                                --region ${AWS_REGION} \
-                                --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":80,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
-                                --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
-                                --query 'Instances[0].InstanceId' \
-                                --output text
-                        """).trim()
+        //                 // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
+        //                 // Lệnh aws cli sẽ tự động nhận diện nó.
+        //                 def output = sh(returnStdout: true, script: """
+        //                     aws ec2 run-instances \
+        //                         --image-id ${EC2_AMI_ID} \
+        //                         --count 1 \
+        //                         --instance-type ${EC2_INSTANCE_TYPE} \
+        //                         --key-name ${EC2_KEY_NAME} \
+        //                         --security-group-ids ${EC2_SG_ID} \
+        //                         --region ${AWS_REGION} \
+        //                         --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":80,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
+        //                         --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Jenkins-Training-Worker}]' \
+        //                         --query 'Instances[0].InstanceId' \
+        //                         --output text
+        //                 """).trim()
                         
-                        env.INSTANCE_ID = output
-                        echo "Instance Created: ${env.INSTANCE_ID}"
-                    }
-                }
-            }
-        }
+        //                 env.INSTANCE_ID = output
+        //                 echo "Instance Created: ${env.INSTANCE_ID}"
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('2. Wait for IP & SSH Ready') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    script {
-                        echo "Waiting for Instance to be RUNNING..."
-                        // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-                        // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
-                        //Lấy Public IP
-                        sleep 30
-                        env.INSTANCE_IP = sh(returnStdout: true, script: """
-                            aws ec2 describe-instances \
-                                --instance-ids ${env.INSTANCE_ID} \
-                                --region ${AWS_REGION} \
-                                --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                                --output text
-                        """).trim()
+        // stage('2. Wait for IP & SSH Ready') {
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+        //             script {
+        //                 echo "Waiting for Instance to be RUNNING..."
+        //                 // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
+        //                 // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
+        //                 //Lấy Public IP
+        //                 sleep 30
+        //                 env.INSTANCE_IP = sh(returnStdout: true, script: """
+        //                     aws ec2 describe-instances \
+        //                         --instance-ids ${env.INSTANCE_ID} \
+        //                         --region ${AWS_REGION} \
+        //                         --query 'Reservations[0].Instances[0].PublicIpAddress' \
+        //                         --output text
+        //                 """).trim()
                         
-                        echo "Public IP: ${env.INSTANCE_IP}"
+        //                 echo "Public IP: ${env.INSTANCE_IP}"
                         
                         
-                        echo " Sleeping 60s for SSH Daemon to start..."
-                        sleep 60
-                    }
-                }
-            }
-        }
-        stage('3. SSH - Setup for Training [phase 1]') {
-            steps {
-                // Load file PEM từ Jenkins Credential vào biến file
-                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
-                    script {
-                        echo "🔌 Connecting via SSH..."
-                        //test
-                        // Cấu hình SSH: 
-                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+        //                 echo " Sleeping 60s for SSH Daemon to start..."
+        //                 sleep 60
+        //             }
+        //         }
+        //     }
+        // }
+        // stage('3. SSH - Setup for Training [phase 1]') {
+        //     steps {
+        //         // Load file PEM từ Jenkins Credential vào biến file
+        //         sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+        //             script {
+        //                 echo "🔌 Connecting via SSH..."
+        //                 //test
+        //                 // Cấu hình SSH: 
+        //                 // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
+        //                 // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
                         
-                        def remoteCommand = """
-                            echo '--- FROM EC2 G4DN ---'
-                            hostname
-                            whoami
-                            echo '--- SYSTEM SETUP ---'
-                            sudo apt update
-                            sudo apt install net-tools
-                            sudo apt install python3-pip -y
-                            sudo apt install python-is-python3 -y
-                            git clone https://github.com/DarkinSideNet/test_jenkins.git -b tcn_phase
-                            curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
-                            sudo chmod +x mcli
-                            sudo mv mcli /usr/local/bin/mcli
-                            cd test_jenkins
-                            pip install -r requirements.txt
-                            echo '--- DONE ---'
-                        """
+        //                 def remoteCommand = """
+        //                     echo '--- FROM EC2 G4DN ---'
+        //                     hostname
+        //                     whoami
+        //                     echo '--- SYSTEM SETUP ---'
+        //                     sudo apt update
+        //                     sudo apt install net-tools
+        //                     sudo apt install python3-pip -y
+        //                     sudo apt install python-is-python3 -y
+        //                     git clone https://github.com/DarkinSideNet/test_jenkins.git -b tcn_phase
+        //                     curl https://dl.min.io/client/mc/release/linux-amd64/mc --output mcli
+        //                     sudo chmod +x mcli
+        //                     sudo mv mcli /usr/local/bin/mcli
+        //                     cd test_jenkins
+        //                     pip install -r requirements.txt
+        //                     echo '--- DONE ---'
+        //                 """
 
-                        // Thực thi lệnh từ xa
-                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+        //                 // Thực thi lệnh từ xa
+        //                  sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
 
-                    }
-                }
-            }
-        }
+        //             }
+        //         }
+        //     }
+        // }
         
 
-        stage('4. SSH - Incremental Training [phase 1]') {
-            steps {
-                // Load file PEM từ Jenkins Credential vào biến file
-                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
-                    script {
-                        echo "🔌 Connecting via SSH..."
+        // stage('4. SSH - Incremental Training [phase 1]') {
+        //     steps {
+        //         // Load file PEM từ Jenkins Credential vào biến file
+        //         sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+        //             script {
+        //                 echo "🔌 Connecting via SSH..."
                         
-                        // Cấu hình SSH: 
-                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+        //                 // Cấu hình SSH: 
+        //                 // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
+        //                 // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
                         
-                        def remoteCommand = """
-                            echo '--- PHASE 1 TRAINING ---'
-                            cd test_jenkins
-                            python3 setup_minio.py
-                            python3 train_incremental_2.py
-                            echo '--- DONE ---'
-                        """
+        //                 def remoteCommand = """
+        //                     echo '--- PHASE 1 TRAINING ---'
+        //                     cd test_jenkins
+        //                     python3 setup_minio.py
+        //                     python3 train_incremental_2.py
+        //                     echo '--- DONE ---'
+        //                 """
 
-                        // Thực thi lệnh từ xa
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+        //                 // Thực thi lệnh từ xa
+        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
                         
-                    }
-                }
-            }
-        }
+        //             }
+        //         }
+        //     }
+        // }
         
-        stage('5. Evaluation & Upload [phase 2]') {
-            steps {
-                // Load file PEM từ Jenkins Credential vào biến file
-                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
-                    script {
-                        echo "🔌 Connecting via SSH..."
+        // stage('5. Evaluation & Upload [phase 2]') {
+        //     steps {
+        //         // Load file PEM từ Jenkins Credential vào biến file
+        //         sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+        //             script {
+        //                 echo "🔌 Connecting via SSH..."
                         
-                        // Cấu hình SSH: 
-                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+        //                 // Cấu hình SSH: 
+        //                 // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
+        //                 // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
                         
-                        def remoteCommand = """
-                            echo '--- STARTING PHASE 2 EVALUATION ---'
-                            cd test_jenkins
-                            python3 run_evaluation.py
-                            python3 ./upload_minio.py
-                            echo '--- DONE ---'
-                        """
+        //                 def remoteCommand = """
+        //                     echo '--- STARTING PHASE 2 EVALUATION ---'
+        //                     cd test_jenkins
+        //                     python3 run_evaluation.py
+        //                     python3 ./upload_minio.py
+        //                     echo '--- DONE ---'
+        //                 """
 
-                        // Thực thi lệnh từ xa
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+        //                 // Thực thi lệnh từ xa
+        //                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
                         
-                    }
-                }
-            }
-        }
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Deploy to Docker Hub') {
             steps {
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
-                        def IMAGE_TAG = "v${env.BUILD_NUMBER}"
+                        def SHORT_SHA = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                        def IMAGE_TAG = "v${env.BUILD_NUMBER}-${SHORT_SHA}"
                         def DOCKER_REPO = "ne1kos0/weather-tcn-api"
+                        echo "📦 Generated Tag: ${IMAGE_TAG}"
                         // Đảm bảo đã login Docker (Sử dụng Jenkins Credentials)
                         withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                             // Chạy script hoặc các lệnh build trực tiếp
@@ -187,7 +189,7 @@ pipeline {
                                 docker build -t ne1kos0/weather-tcn-api:${IMAGE_TAG} .
                                 docker push ne1kos0/weather-tcn-api:${IMAGE_TAG}
                             '''
-                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
                         }
                         echo "📝 Updating Git Manifest with Tag: ${IMAGE_TAG}"
                         sh """
