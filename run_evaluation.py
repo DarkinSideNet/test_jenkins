@@ -45,8 +45,8 @@ with mlflow.start_run(run_name=f"Eval_Batch_{pd.Timestamp.now().strftime('%Y%m%d
         # mlflow.log_artifact(SUMMARY_PATH)
         mlflow.log_metric("global_avg_rmse", summary["rmse"].mean())
 
-        print("\n🏆 Đang tìm kiếm Champion...")
+        print("\n Looking for a Champion...")
         # Gọi file chọn model (file này sẽ tạo 1 run MLflow riêng hoặc có thể lồng vào đây)
         subprocess.run(["python3", "select_best_model_2.py"])
     else:
-        print("❌ Không có kết quả nào để tổng hợp.")
+        print("There are no results to summarize.")

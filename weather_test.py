@@ -120,4 +120,4 @@ if __name__ == "__main__":
         result_df = pd.DataFrame(all_rows)
         out_path = os.path.join(LOG_DIR, f"{args.out_name}_result.csv")
         result_df.to_csv(out_path, index=False)
-        print(f"✅ Đã test xong {len(model_files)} model. Lưu tại: {out_path}")
+        print(f"Testing completed for {len(model_files)} models. Results saved at: {out_path}")

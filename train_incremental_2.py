@@ -80,7 +80,7 @@ def train_incremental_case(df, features, cfg, base_checkpoint_path):
     print(f"\n🔄 Fine-tuning case: {name}")
 
     if not os.path.exists(base_checkpoint_path):
-        print(f"⚠️ Không tìm thấy model gốc tại {base_checkpoint_path}. Bỏ qua case này.")
+        print(f"The original model could not be found at {base_checkpoint_path}. Skipping this case.")
         return None
     mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI"))
     mlflow.set_experiment(EXPERIMENT_NAME)
@@ -170,11 +170,11 @@ if __name__ == "__main__":
     daily_dir = "./dataset_daily/"
     daily_files = sorted(glob.glob(os.path.join(daily_dir, "*.csv")))
     if not daily_files:
-        print("❌ Không tìm thấy file csv nào trong dataset_daily.")
+        print("No CSV files were found in dataset_daily.")
         exit(1)
     
     latest_csv = daily_files[-1]
-    print(f"📂 Sử dụng dữ liệu mới từ: {latest_csv}")
+    print(f"Using new data from: {latest_csv}")
     df_new = pd.read_csv(latest_csv)
 
     FEATURES = TARGETS.copy()
@@ -213,7 +213,7 @@ if __name__ == "__main__":
     if results:
         top3 = sorted(results, key=lambda x: x["loss"])[:3]
 
-        print("\n🏆 TOP 3 INCREMENTAL MODELS")
+        print("\n TOP 3 INCREMENTAL MODELS")
         log_lines.append("\nTOP 3 INCREMENTAL MODELS")
         for i, item in enumerate(top3, 1):
             line = f"{i}. {item['model_name']} | loss={item['loss']:.4f}"
@@ -233,4 +233,4 @@ if __name__ == "__main__":
                 os.path.join(INC_MODEL_DIR, item["model_name"]),
                 os.path.join("top3_models_incremental", item["model_name"])
             )
-        print(f"\n✅ Hoàn thành! Model đã lưu tại {INC_MODEL_DIR} và Top 3 tại top3_models_incremental")
+        print(f"\n Completed! Models saved at {INC_MODEL_DIR} and Top 3 at top3_models_incremental")

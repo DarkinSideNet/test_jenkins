@@ -43,6 +43,6 @@ def select_the_champion():
         # mlflow.log_artifact(info_path)
         # mlflow.log_artifact(destination_path, artifact_path="production_ready")
 
-    print(f"✅ Đã chọn Champion: {best_model_name} với RMSE: {best_rmse:.4f}")
+    print(f"Champion selected: {best_model_name} with RMSE: {best_rmse:.4f}")
 if __name__ == "__main__":
     select_the_champion()
