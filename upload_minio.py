@@ -26,11 +26,11 @@ def upload_folders_to_minio():
     prod_model_local = "best_model_final/weather_model_production.pth"
     static_s3_path = "current_model/model.pth"
     
-    print(f"--- Bắt đầu upload lên path: {BASE_PATH}/{timestamp} ---")
+    print(f"--- Start uploading the link: {BASE_PATH}/{timestamp} ---")
 
     for folder in folders_to_upload:
         if not os.path.isdir(folder):
-            print(f"Cảnh báo: Không tìm thấy thư mục {folder}, bỏ qua...")
+            print(f"Warning: Folder {folder} not found, skipping...")
             continue
             
         # Duyệt qua tất cả các file trong thư mục (đệ quy)
@@ -44,21 +44,20 @@ def upload_folders_to_minio():
                 
                 try:
                     s3_client.upload_file(local_path, BUCKET_NAME, s3_path)
-                    print(f"Đã upload: {local_path} -> {s3_path}")
+                    print(f"Uploaded: {local_path} -> {s3_path}")
                 except Exception as e:
                     print(f"Lỗi khi upload {local_path}: {e}")
 
         if os.path.exists(prod_model_local):
-            print(f"\n--- Đang cập nhật model bản production vào: {static_s3_path} ---")
+            print(f"\n--- Updating the production model now: {static_s3_path} ---")
             try:
                 s3_client.upload_file(prod_model_local, BUCKET_NAME, static_s3_path)
-                print(f"Thành công: Đã ghi đè {prod_model_local} -> {static_s3_path}")
+                print(f"Success: Overwritten {prod_model_local} -> {static_s3_path}")
             except Exception as e:
-                print(f"Lỗi khi ghi đè model current: {e}")
+                print(f"Error overwriting current model: {e}")
         else:
-            print(f"Cảnh báo: Không tìm thấy {prod_model_local} để cập nhật bản current.")
-
-    print("--- Hoàn thành pipeline upload ---")
+            print(f"Warning: {prod_model_local} not found to update current version.")
+    print("--- Upload pipeline completed ---")
 
 if __name__ == "__main__":
     upload_folders_to_minio()

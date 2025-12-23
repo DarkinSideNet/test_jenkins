@@ -77,7 +77,7 @@ def prepare_data_incremental(df, features, targets, horizon, seq_len, scaler_X):
 # =====================
 def train_incremental_case(df, features, cfg, base_checkpoint_path):
     name = f"h{cfg['horizon']}_ep{cfg['epochs']}_bs{cfg['batch_size']}"
-    print(f"\n🔄 Fine-tuning case: {name}")
+    print(f"\nFine-tuning case: {name}")
 
     if not os.path.exists(base_checkpoint_path):
         print(f"The original model could not be found at {base_checkpoint_path}. Skipping this case.")

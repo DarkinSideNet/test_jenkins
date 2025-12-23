@@ -15,6 +15,7 @@ pipeline {
         // ID Credential lưu trong Jenkins (chứa file PEM)
         JENKINS_SSH_CRED_ID = 'ssh-eks-key' 
         AWS_CRED_ID = 'aws-credentials'
+        DOCKER_HUB_CREDS = 'docker-hub-creds'
         
     }
 
@@ -166,6 +167,29 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Docker Hub') {
+            steps {
+                sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
+                    script {
+                        // Đảm bảo đã login Docker (Sử dụng Jenkins Credentials)
+                        withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                            
+                            // Chạy script hoặc các lệnh build trực tiếp
+                            def remoteCommand """
+                                git clone https://github.com/DarkinSideNet/FastApi_dev.git
+                                cp test_jenkins/best_model_final/weather_model_production.pth FastApi_dev/model.pth
+                                docker build -t ne1kos0/weather-tcn-api:latest ./FastApi_dev
+                                docker push ne1kos0/weather-tcn-api:latest
+                            """
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
+                        }
+                    }
+                }
+            }
+        }
+    
     }
 
 
