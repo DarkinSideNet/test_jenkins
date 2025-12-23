@@ -189,11 +189,12 @@ pipeline {
                                 cd DevOps_Projects/charts/fastapi-ml/
                                 # Sửa file values.yaml (Tìm dòng tag: và thay thế giá trị)
                                 # Lệnh sed này sẽ tìm dòng bắt đầu bằng '  tag:' và thay bằng tag mới
-                                sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' values-prod.yaml
+                                sed -i 's/tag: .*/tag: "v78-b796dc7"/' values-prod.yaml
                                 # Commit và Push
                                 git add values-prod.yaml
-                                git commit -m "image-updater: update ${DOCKER_REPO} to ${IMAGE_TAG}"
-                                git push origin main
+                                git commit -m "image-updater: update ${DOCKER_REPO} to v78-b796dc7"
+                                git push
+                                
                             """
                             sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
                         }
