@@ -183,7 +183,7 @@ pipeline {
                                 
 
                             """
-                            sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'DOCKER_USER=$DOCKER_USER DOCKER_PASS=$DOCKER_PASS bash -s' << 'EOF'\n${remoteCommand}\nEOF"
                         }
                         
                     }
@@ -228,7 +228,7 @@ pipeline {
                             """
                             
                          
-                            sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'GIT_USER=$GIT_USER GIT_TOKEN=$GIT_TOKEN bash -s' << 'EOF'\n${remoteCommand}\nEOF"
+                            sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} 'GIT_USER=$GIT_USER GIT_TOKEN=$GIT_TOKEN bash -s' << 'EOF'\n${remoteCommand}\nEOF"
                         }
                     }
                 }
