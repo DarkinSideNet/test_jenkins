@@ -32,8 +32,7 @@ pipeline {
                         echo "Launching EC2 Instance..."
                         
                         
-                        // Lúc này biến môi trường AWS_ACCESS_KEY_ID đã có giá trị
-                        // Lệnh aws cli sẽ tự động nhận diện nó.
+                        
                         def output = sh(returnStdout: true, script: """
                             aws ec2 run-instances \
                                 --image-id ${EC2_AMI_ID} \
@@ -60,9 +59,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     script {
                         echo "Waiting for Instance to be RUNNING..."
-                        // sh "aws ec2 wait instance-running --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
-                        // sh "aws ec2 wait instance-running --instance-ids i-086cfaeaee6bcde83 --region us-east-1"
-                        //Lấy Public IP
+                    
                         sleep 30
                         env.INSTANCE_IP = sh(returnStdout: true, script: """
                             aws ec2 describe-instances \
@@ -83,14 +80,11 @@ pipeline {
         }
         stage('3. SSH - Setup for Training [phase 1]') {
             steps {
-                // Load file PEM từ Jenkins Credential vào biến file
+                
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
                         echo "🔌 Connecting via SSH..."
-                        //test
-                        // Cấu hình SSH: 
-                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+                        
                         
                         def remoteCommand = """
                             echo '--- FROM EC2 G4DN ---'
@@ -110,7 +104,7 @@ pipeline {
                             echo '--- DONE ---'
                         """
 
-                        // Thực thi lệnh từ xa
+                     
                          sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
 
                     }
@@ -121,14 +115,12 @@ pipeline {
 
         stage('4. SSH - Incremental Training [phase 1]') {
             steps {
-                // Load file PEM từ Jenkins Credential vào biến file
+             
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
                         echo "🔌 Connecting via SSH..."
                         
-                        // Cấu hình SSH: 
-                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+                       
                         
                         def remoteCommand = """
                             echo '--- PHASE 1 TRAINING ---'
@@ -138,7 +130,7 @@ pipeline {
                             echo '--- DONE ---'
                         """
 
-                        // Thực thi lệnh từ xa
+                       
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
                         
                     }
@@ -148,14 +140,12 @@ pipeline {
         
         stage('5. Evaluation & Upload [phase 2]') {
             steps {
-                // Load file PEM từ Jenkins Credential vào biến file
+              
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
                         echo "🔌 Connecting via SSH..."
                         
-                        // Cấu hình SSH: 
-                        // -o StrictHostKeyChecking=no: Để không hỏi Yes/No khi connect lần đầu
-                        // ubuntu@${INSTANCE_IP}: User mặc định của AMI Ubuntu
+                        
                         
                         def remoteCommand = """
                             echo '--- STARTING PHASE 2 EVALUATION ---'
@@ -165,7 +155,7 @@ pipeline {
                             echo '--- DONE ---'
                         """
 
-                        // Thực thi lệnh từ xa
+                        
                         sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.INSTANCE_IP} \"${remoteCommand}\""
                         
                     }
@@ -204,14 +194,14 @@ pipeline {
             steps {
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
-                        // Đảm bảo biến IMAGE_TAG đã được định nghĩa ở các stage trước
+                       
                         echo "📦 Deploying with Tag: ${IMAGE_TAG}"
                     
                         withCredentials([usernamePassword(credentialsId: GITHUB_CRED_ID, 
                                         usernameVariable: 'GIT_USER', 
                                         passwordVariable: 'GIT_TOKEN')]) {
                         
-                            // Sử dụng nháy kép cho remoteCommand để Jenkins giải mã được ${IMAGE_TAG}
+                            
                             def remoteCommand = """
                                 set -e
                                 # 1. Dọn dẹp thư mục cũ để clone mới
@@ -237,7 +227,7 @@ pipeline {
                                 git push origin main
                             """
                             
-                            // Thực thi lệnh SSH
+                         
                             sh "ssh -o StrictHostKeyChecking=no ubuntu@98.81.29.147 'GIT_USER=$GIT_USER GIT_TOKEN=$GIT_TOKEN bash -s' << 'EOF'\n${remoteCommand}\nEOF"
                         }
                     }
@@ -248,14 +238,14 @@ pipeline {
     }
 
 
-    //hối này LUÔN LUÔN chạy dù các bước trên có lỗi hay không
+   
     post {
         always {
             script {
-                // Kiểm tra nếu biến INSTANCE_ID có giá trị thì mới xóa
+              
                 if (env.INSTANCE_ID) {
                     echo "TERMINATING INSTANCE ${env.INSTANCE_ID}..."
-                    // Phải dùng credentials ở đây để có quyền Admin xóa máy
+                  
                     withCredentials([usernamePassword(credentialsId: AWS_CRED_ID, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                         sh "aws ec2 terminate-instances --instance-ids ${env.INSTANCE_ID} --region ${AWS_REGION}"
                     }
