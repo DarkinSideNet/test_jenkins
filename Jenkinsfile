@@ -18,7 +18,7 @@ pipeline {
         DOCKER_HUB_CREDS = 'docker-hub-creds'
         GITHUB_CRED_ID = 'github-creds-id'
         SHORT_SHA = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-        IMAGE_TAG = "v${env.BUILD_NUMBER}-${SHORT_SHA}"
+        IMAGE_TAG = "v${env.BUILD_NUMBER}-${SHORT_SHA}" 
         DOCKER_REPO = "ne1kos0/weather-tcn-api"
         
     }
@@ -195,7 +195,7 @@ pipeline {
                 sshagent(credentials: [JENKINS_SSH_CRED_ID]) {
                     script {
                        
-                        echo "📦 Deploying with Tag: ${IMAGE_TAG}"
+                        echo "Deploying with Tag: ${IMAGE_TAG}"
                     
                         withCredentials([usernamePassword(credentialsId: GITHUB_CRED_ID, 
                                         usernameVariable: 'GIT_USER', 
@@ -204,10 +204,10 @@ pipeline {
                             
                             def remoteCommand = """
                                 set -e
-                                # 1. Dọn dẹp thư mục cũ để clone mới
+                                # 1. Clean up the old folder to make room for the new copy.
                                 rm -rf ~/DevOps_Projects
                                 
-                                # 2. Cấu hình định danh Git
+                                # 2. Configure Git identity
                                 git config --global user.email "jenkins@neikoscloud.net"
                                 git config --global user.name "Jenkins CI/CD"
                                 
@@ -215,13 +215,13 @@ pipeline {
                                 git clone https://github.com/DarkinSideNet/DevOps_Projects.git ~/DevOps_Projects
                                 cd ~/DevOps_Projects/charts/fastapi-ml/
                                 
-                                # 4. Sửa file values-prod.yaml bằng biến động (Sử dụng ${IMAGE_TAG})
+                                # 4. Update values-prod.yaml with the new image tag (${IMAGE_TAG})
                                 sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' values-prod.yaml
                                 
-                                # 5. Cấu hình Remote URL chứa Token để không bị hỏi mật khẩu khi Push
+                                # 5. Configure Remote URL with Token to avoid password prompt when pushing
                                 git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/DarkinSideNet/DevOps_Projects.git
                                 
-                                # 6. Commit và Push
+                                # 6. Commit and Push
                                 git add values-prod.yaml
                                 git commit -m "image-updater: update to ${IMAGE_TAG}"
                                 git push origin main
